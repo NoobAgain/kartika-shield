@@ -1,0 +1,69 @@
+// Peta Dunia Live: kanvas globe/datar, mode Simulasi, jendela dock
+const KT=[['Narasi SARA','#ff4d5e'],['Buzzer terkoordinasi','#ffb020'],['Deepfake','#b266ff'],['Provokasi massa','#2ee6a6'],['Phishing sosial','#38bdf8']];
+const HUB=[['Singapura',1.3,103.8],['Frankfurt',50.1,8.7],['Virginia',38.9,-77.4],['Tokyo',35.7,139.7],['Sao Paulo',-23.5,-46.6],['Mumbai',19.1,72.9],['Sydney',-33.9,151.2],['Dubai',25.2,55.3],['London',51.5,-0.1],['Johannesburg',-26.2,28]];
+const TG=[['JK','Jakarta',-6.2,106.8],['JI','Surabaya',-7.25,112.75],['SU','Medan',3.6,98.7],['SN','Makassar',-5.1,119.4],['PA','Jayapura',-2.5,140.7],['BA','Denpasar',-8.65,115.2],['KI','Balikpapan',-1.27,116.8],['SA','Manado',1.5,124.8],['MA','Ambon',-3.7,128.2],['SS','Palembang',-3,104.7],['JB','Bandung',-6.9,107.6],['JT','Semarang',-7,110.4],['PH','Nabire',-3.37,135.5],['YO','Yogyakarta',-7.8,110.37],['BT','Serang',-6.12,106.15],['AC','Banda Aceh',5.55,95.32],['SB','Padang',-0.95,100.35],['RI','Pekanbaru',0.51,101.45],['KR','Batam',1.05,104.03],['JA','Jambi',-1.6,103.6],['LA','Bandar Lampung',-5.43,105.26],['KB','Pontianak',-0.03,109.33],['KS','Banjarmasin',-3.32,114.59],['KT','Palangka Raya',-2.21,113.92],['SG','Kendari',-3.97,122.51],['GO','Gorontalo',0.54,123.06],['NB','Mataram',-8.58,116.12],['NT','Kupang',-10.17,123.6],['ST','Palu',-0.9,119.87],['PD','Sorong',-0.88,131.26],['PB','Manokwari',-0.86,134.08],['PS','Merauke',-8.49,140.4],['PP','Wamena',-4.09,138.95],['BE','Bengkulu',-3.8,102.26],['BB','Pangkal Pinang',-2.13,106.12],['KU','Tanjung Selor',2.84,117.37],['SR','Mamuju',-2.68,118.89],['MU','Sofifi',0.74,127.57]];
+let kv={g:0,k:1,rot:[-30,0],ty:0},kon=KT.map(()=>1),kct=KT.map(()=>0),kas={},kts={},kvt={},knr={},kagg={},kc=0,klg=[],kev=[],kbk=KT.map(()=>Array(180).fill(0)),kW=900,kH=600,kMW=900,kcen=[450,300],kraf=0,kwt=0,klast=0,ksp=0,kbs=0,krun=true,kbuilt=false,kdrag=0,kidle=0,kside=1,kco=[],kbo=null,kid=null,kgr=null;
+function kSize(){const s=$('#ks'),r=window.devicePixelRatio||1;kW=s.clientWidth||900;kH=s.clientHeight||600;kMW=kW-(kside&&window.innerWidth>760?320:0);
+[['#kc',kW,kH],['#ktc',kMW,110]].forEach(([q,w,hh])=>{const c=$(q);c.width=w*r;c.height=hh*r;c.style.width=w+'px';c.style.height=hh+'px';c.getContext('2d').setTransform(r,0,0,r,0,0)});$('#ktl').style.width=kMW+'px'}
+function kProj(){const cx=kMW/2,cy=(kH-120)/2+10;kcen=[cx,cy];let p;
+if(kv.g)p=d3.geoOrthographic().rotate(kv.rot).clipAngle(90).scale(Math.min(kMW,kH-130)*.46*kv.k).translate([cx,cy]);
+else{const aw=kMW,ah=kH-110;p=d3.geoNaturalEarth1().rotate([kv.rot[0],0]).fitExtent([[0,0],[aw,ah]],{type:'Sphere'});const b=d3.geoPath(p).bounds({type:'Sphere'}),cv=Math.max(aw/(b[1][0]-b[0][0]),ah/(b[1][1]-b[0][1]));p.scale(p.scale()*cv*kv.k).translate([aw/2,ah/2+kv.ty])}return p}
+function kSpawn(){const on=KT.map((_,i)=>i).filter(i=>kon[i]);if(!on.length)return;const y=on[Math.random()*on.length|0],h=HUB[Math.random()*HUB.length|0],t=TG[Math.random()*TG.length|0],m=MS[Math.random()*MS.length|0],r=Math.round(40+Math.random()*55),dd=d3.geoDistance([h[2],h[1]],[t[3],t[2]]);
+kev.push({h,t,y,b:kwt,A:.03+dd*.06,ip:d3.geoInterpolate([h[2],h[1]],[t[3],t[2]])});kct[y]++;kc++;kbk[y][179]++;const up=(o,k)=>{o[k]=(o[k]||0)+1};up(kas,h[0]);up(kts,t[1]);up(kvt,KT[y][0]);up(knr,m[1]);
+const k=t[0]+'|'+m[1],o=kagg[k]=kagg[k]||{p:t[0],i:m[1],v:0,rs:0};o.v++;o.rs+=r;klg.unshift(new Date().toISOString().slice(11,19)+' '+KT[y][0]+' \u00b7 '+h[0]+' \u2192 '+t[1]);klg.length=Math.min(klg.length,5);kUI()}
+function kBr(id,o,col){const L=Object.entries(o).sort((a,b)=>b[1]-a[1]),T=L.reduce((s,e)=>s+e[1],0)||1;$(id).innerHTML=L.slice(0,5).map(([n,v])=>{const pc=Math.round(v/T*100);return`<div class=kr2 style='--w:${pc}%;--c:${col?col(n):'rgba(90,130,210,.32)'}'><span>${esc(n)}</span><b>${pc} %</b></div>`}).join('')}
+function kUI(){KT.forEach((t,i)=>{const e=document.getElementById('kc'+i);if(e)e.textContent=kct[i]});kBr('#kb1',kas);kBr('#kb2',kts);kBr('#kb3',kvt,n=>KT.find(t=>t[0]===n)[1]+'66');kBr('#kb4',knr);$('#klog').textContent=klg.join('\n')}
+function kTL(){const x=$('#ktc').getContext('2d'),w=kMW,bw=(w-130)/180;x.clearRect(0,0,w,110);KT.forEach((t,i)=>{const y0=14+i*18;x.fillStyle=t[1];x.globalAlpha=kon[i]?.85:.2;kbk[i].forEach((v,j)=>{if(v){const hh=Math.min(14,v*5);x.fillRect(j*bw,y0+14-hh,Math.max(1,bw-.5),hh)}});x.globalAlpha=.25;x.fillRect(0,y0+14,w-130,1)});
+x.globalAlpha=1;x.fillStyle='#8fb0ff';x.font='10px system-ui';x.fillText('-3:00',2,10);x.fillText('-1:30',(w-130)/2,10);x.fillText('SEKARANG',w-130-56,10);KT.forEach((t,i)=>{x.fillStyle=t[1];x.fillText(t[0].toUpperCase(),w-122,14+i*18+12)})}
+function kDraw(ts){kraf=requestAnimationFrame(kDraw);const dt=Math.min(.05,(ts-klast)/1000||0);klast=ts;
+if(krun){kwt+=dt;if(ksim&&kwt-ksp>.9){ksp=kwt;kSpawn()}if(kwt-kbs>=1){kbs=kwt;kbk.forEach(a=>{a.shift();a.push(0)})}}
+if(kv.g&&!kdrag&&performance.now()-kidle>3000)kv.rot[0]-=dt*5;
+const x=$('#kc').getContext('2d'),p=kProj(),P=d3.geoPath(p,x),ctr=[-kv.rot[0],-kv.rot[1]];
+const bg=x.createRadialGradient(kMW/2,kH/2,20,kMW/2,kH/2,Math.max(kMW,kH)*.8);bg.addColorStop(0,'#0a1328');bg.addColorStop(1,'#03050b');x.globalAlpha=1;x.fillStyle=bg;x.fillRect(0,0,kW,kH);
+if(kv.g){x.beginPath();P({type:'Sphere'});x.fillStyle='#060f22';x.fill();x.shadowColor='#3b6bff';x.shadowBlur=20;x.strokeStyle='rgba(90,150,255,.4)';x.lineWidth=1;x.stroke();x.shadowBlur=0}else{x.fillStyle='#050d1f';x.fillRect(0,0,kMW,kH)}
+x.beginPath();P(kgr);x.strokeStyle='rgba(80,140,255,.13)';x.stroke();
+x.beginPath();kco.forEach(f=>P(f));x.fillStyle='rgba(88,84,200,.55)';x.fill();
+if(kid){x.beginPath();P(kid);x.fillStyle='rgba(255,77,94,.5)';x.fill()}
+x.beginPath();P(kbo);x.strokeStyle='rgba(120,220,230,.45)';x.lineWidth=.6;x.stroke();
+const ps=(lo,la,hh)=>{if(kv.g&&d3.geoDistance([lo,la],ctr)>1.55)return null;const q=p([lo,la]);if(!q)return null;return kv.g?[kcen[0]+(q[0]-kcen[0])*(1+hh),kcen[1]+(q[1]-kcen[1])*(1+hh)]:[q[0],q[1]-hh*kMW*.5]};
+kev=kev.filter(a=>kwt-a.b<4.2);
+kev.forEach(a=>{if(!kon[a.y])return;const age=(kwt-a.b)/2.4,col=KT[a.y][1];if(a.loc){const q=ps(a.t[3],a.t[2],0);if(q){x.strokeStyle=col;x.shadowColor=col;x.shadowBlur=10;x.lineWidth=2;for(let k=0;k<3;k++){const a2=age*1.4-k*.25;if(a2>0&&a2<1.2){x.globalAlpha=Math.max(0,1-a2/1.2);x.beginPath();x.arc(q[0],q[1],4+a2*34,0,7);x.stroke()}}}return}x.strokeStyle=col;x.shadowColor=col;x.shadowBlur=8;x.lineWidth=1.6;x.globalAlpha=Math.max(0,1.2-age*.55);x.beginPath();let pr=null;
+for(let u=Math.max(0,age-.45);u<=Math.min(age,1);u+=.025){const g=a.ip(u),q=ps(g[0],g[1],a.A*Math.sin(Math.PI*u));if(!q){pr=null;continue}if(pr&&(kv.g||Math.abs(q[0]-pr[0])<kMW/2))x.lineTo(q[0],q[1]);else x.moveTo(q[0],q[1]);pr=q}x.stroke();
+if(age>=1){const q=ps(a.t[3],a.t[2],0);if(q){x.globalAlpha=Math.max(0,1-(age-1)*1.1);x.beginPath();x.arc(q[0],q[1],3+(age-1)*24,0,7);x.stroke()}}});
+x.shadowBlur=0;x.globalAlpha=1;x.fillStyle='#fff';HUB.forEach(h=>{const q=ps(h[2],h[1],0);if(q)x.fillRect(q[0]-1.5,q[1]-1.5,3,3)});x.fillStyle='#ff4d5e';TG.forEach(t=>{const q=ps(t[3],t[2],0);if(q){x.beginPath();x.arc(q[0],q[1],2.5,0,7);x.fill()}});if(kv.k>=2.5){const sz=Math.min(30,6+kv.k*4);Object.keys(PCAP).forEach(c=>{const m=KLG[c],q=m&&ps(PCAP[c][1],PCAP[c][0],0);if(q&&m.complete&&m.naturalWidth)x.drawImage(m,q[0]-sz*.4,q[1]-sz*.5,sz*.8,sz)})}
+if(ksim){x.save();x.globalAlpha=.13;x.fillStyle='#ffb020';x.font='800 '+Math.max(22,kMW/20)+'px system-ui';x.textAlign='center';x.translate(kMW/2,(kH-110)/2);x.rotate(-.16);x.fillText('SIMULASI · DATA SINTETIS',0,0);x.restore();
+x.globalAlpha=1;x.fillStyle='rgba(255,176,32,.92)';x.fillRect(0,kH-132,kMW,22);x.fillStyle='#1a1000';x.font='700 11px system-ui';x.textAlign='center';x.fillText('MODE SIMULASI · DATA SINTETIS · BUKAN KEJADIAN NYATA',kMW/2,kH-117);x.textAlign='left'}
+$('#kn').style.color=ksim?'#ffb020':'';
+kTL();$('#kn').textContent=((ksim?Math.floor(Date.now()%86400000/1000*4.2):0)+kc).toLocaleString('id-ID');if(!ksim&&!kc){x.globalAlpha=1;x.fillStyle='rgba(223,233,255,.6)';x.font='14px system-ui';x.textAlign='center';x.fillText('Menunggu data nyata: hubungkan kolektor, sambungkan Feed, impor CSV, atau analisis konten.',kMW/2,kH/2+10);x.textAlign='left'}}
+function kIn(){const c=$('#kc');let d=null;c.style.touchAction='none';c.style.cursor='grab';
+c.onpointerdown=e=>{d=[e.clientX,e.clientY];kdrag=1;c.setPointerCapture(e.pointerId);c.style.cursor='grabbing'};
+c.onpointermove=e=>{if(!d)return;const dx=e.clientX-d[0],dy=e.clientY-d[1];d=[e.clientX,e.clientY];if(kv.g){const f=.28/Math.max(.7,kv.k);kv.rot[0]+=dx*f;kv.rot[1]=Math.max(-80,Math.min(80,kv.rot[1]-dy*f))}else{kv.rot[0]+=dx*.3/kv.k;kv.ty=Math.max(-kH*.4,Math.min(kH*.4,kv.ty+dy))}};
+c.onpointerup=c.onpointercancel=()=>{d=null;kdrag=0;kidle=performance.now();c.style.cursor='grab'};
+c.onwheel=e=>{e.preventDefault();kv.k=Math.max(.8,Math.min(6,kv.k*Math.exp(-e.deltaY*.0015)))}}
+function kInit(){try{if(!kbuilt){if(!window.d3||!window.topojson)throw 0;const w=window.DATA_WD,o=w.objects.countries;kco=topojson.feature(w,o).features;kbo=topojson.mesh(w,o,(a,b)=>a!==b);kid=kco.find(f=>String(f.id)==='360');kgr=d3.geoGraticule10();
+$('#kl').innerHTML=KT.map((t,i)=>`<button data-i=${i} style=color:${t[1]}><i></i><span style=color:#e9f0ff>${t[0]}</span><em id=kc${i}>0</em></button>`).join('');kIn();kwt=2;ksp=2;kbs=2;kbuilt=true}
+kSize();if(!kv.i0){kv.i0=1;if(kMW<700){kv.k=3.4;kv.rot[0]=-115;kv.ty=-20}else kv.rot[0]=-100}if(!kraf)kraf=requestAnimationFrame(kDraw)}catch(e){$('#ks').insertAdjacentHTML('beforeend','<p style=position:absolute;left:20px;top:200px;color:#ff8a94>Pustaka peta gagal dimuat. Periksa koneksi lalu muat ulang.</p>')}}
+window.addEventListener('resize',()=>{if(kbuilt)kSize()});
+$('#kl').onclick=e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;kon[i]^=1;b.classList.toggle('off',!kon[i])};
+$('#kbd').onclick=()=>{krun=!krun;$('#kbd').textContent=krun?'Jeda':'Lanjut'};
+$('#kgl').onclick=()=>{kv.g^=1;kv.k=1;kv.ty=0;kv.rot=kv.g?[-110,-5]:[-30,0];$('#kgl').textContent=kv.g?'Plane':'Globe'};
+$('#kz1').onclick=()=>{kv.k=Math.min(6,kv.k*1.3)};$('#kz0').onclick=()=>{kv.k=Math.max(.8,kv.k/1.3)};
+$('#kcol').onclick=()=>{kside^=1;$('#ksb').classList.toggle('c',!kside);$('#ks').classList.toggle('nc',!kside);kSize()};
+$('#ksy').onclick=()=>{const L=Object.values(kagg);if(!L.length)return;L.forEach(o=>mr.push({p:o.p,i:o.i,v:o.v,r:Math.round(o.rs/o.v),s:/asing|ibadah|agama|pendatang/i.test(o.i)}));kagg={};svM();renderM();document.querySelector('[data-t=m]').click()};
+const KW=[['i','Insiden','Insiden'],['a','Analisis Konten','Analisis'],['b','Deteksi Buzzer','Buzzer'],['m','Peta Peringatan Dini','Peta Dini'],['c','Bot Penjaga','Bot'],['d','Dashboard','Dashboard'],['e','Kenali Modus','Modus'],['v','Live Berita','Berita'],['f','Feed Sosial','Feed']];let kz=10;
+$('#ks').insertAdjacentHTML('beforeend',`<div class=kdock id=kdock>${KW.map(w=>`<button data-id=${w[0]}>${w[2]}</button>`).join('')}</div>`);
+function kDk(){KW.forEach(([id])=>{document.querySelector('#kdock [data-id='+id+']').classList.toggle('on',!document.getElementById('kw_'+id).classList.contains('hidden'))})}
+function kOpen(id){const w=document.getElementById('kw_'+id);if(!w)return;w.classList.remove('hidden','min');if(!w.dataset.p){w.dataset.p=1;const sw=$('#ks').clientWidth-(kside&&window.innerWidth>760?320:0);w.style.left=Math.max(8,(sw-w.offsetWidth)/2)+'px';w.style.top='84px'}w.style.zIndex=++kz;if(id==='d')dash();kDk()}
+KW.forEach(([id,t],i)=>{const s=document.getElementById(id),w=document.createElement('div');w.className='kw hidden';w.id='kw_'+id;w.style.left=(270+i*26)+'px';w.style.top=(84+i*26)+'px';
+w.innerHTML=`<div class=kh><b>${t}</b><span><button data-a=m>\u2013</button> <button data-a=x>\u00d7</button></span></div><div class=kwb></div>`;w.lastChild.appendChild(s);s.classList.remove('hidden');$('#ks').appendChild(w);
+const h=w.firstChild;w.addEventListener('pointerdown',()=>{w.style.zIndex=++kz},true);
+h.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.a==='x')w.classList.add('hidden');else w.classList.toggle('min');kDk()};
+h.onpointerdown=e=>{if(e.target.closest('button'))return;const r=w.getBoundingClientRect(),p=$('#ks').getBoundingClientRect(),dx=e.clientX-r.left,dy=e.clientY-r.top;h.setPointerCapture(e.pointerId);h.onpointermove=m=>{w.style.left=Math.max(0,Math.min(p.width-80,m.clientX-p.left-dx))+'px';w.style.top=Math.max(0,Math.min(p.height-40,m.clientY-p.top-dy))+'px'};h.onpointerup=()=>{h.onpointermove=null}}});
+$('#kdock').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.id,w=document.getElementById('kw_'+id);if(w.classList.contains('hidden'))kOpen(id);else{w.classList.toggle('min');w.style.zIndex=++kz}kDk()};
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{if(b.dataset.t!=='k')kOpen(b.dataset.t)});
+kInit();
+var ksim=false;
+function kReset(){kct=KT.map(()=>0);kas={};kts={};kvt={};knr={};kagg={};kc=0;klg=[];kev=[];kbk=KT.map(()=>Array(180).fill(0));fc=[0,0,0];['#fn1','#fn2','#fn3'].forEach(q=>{$(q).textContent='0'});kUI()}
+$('#ksm').onclick=()=>{ksim=!ksim;kReset();$('#ksm').textContent='Mode: '+(ksim?'Simulasi':'Nyata');const b=$('#kbg');b.textContent=ksim?'SIMULASI · DATA SINTETIS':'DATA NYATA';b.classList.toggle('s',ksim);$('#kcl').textContent=ksim?'SINYAL SEJAK 00:00 UTC (SIMULASI)':'SINYAL NYATA SESI INI';$('#kh1').textContent=ksim?'TOP ASAL SINYAL (REGION HOSTING)':'TOP SUMBER DATA';$('#kmn').textContent=ksim?'Mode simulasi: peristiwa sintetis untuk demo. Titik asal adalah region hosting, bukan identitas pelaku.':'Mode data nyata: hanya peristiwa dari kolektor, Feed Bluesky, impor CSV, dan analisis Anda yang tampil di peta.'};
+(()=>{const n=document.querySelector('#k>p.note'),s=document.getElementById('ksb');if(n&&s)s.appendChild(n)})();
+$('#kpng').onclick=()=>{$('#kc').toBlob(b=>dlFile((ksim?'peta-simulasi-':'peta-live-')+stamp()+'.png',b))};

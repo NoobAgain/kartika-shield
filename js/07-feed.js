@@ -1,0 +1,39 @@
+// Feed: Bluesky langsung, kolektor SSE, tinjauan manual dan ekspor CSV
+const CITYRX=[[/\b(?:papua barat daya|sorong)\b/i,'PD'],[/\b(?:papua barat|manokwari)\b/i,'PB'],[/\b(?:papua tengah|nabire)\b/i,'PH'],[/\b(?:papua selatan|merauke)\b/i,'PS'],[/\b(?:papua pegunungan|wamena|jayawijaya)\b/i,'PP'],[/\b(?:jayapura|papua)\b/i,'PA'],[/\b(?:balikpapan|samarinda|kaltim)\b/i,'KI'],[/\b(?:denpasar|bali)\b/i,'BA'],[/\b(?:jakarta|dki)\b/i,'JK'],[/\b(?:bekasi|depok|bogor|bandung|jabar)\b/i,'JB'],[/\b(?:tangerang|serang|banten)\b/i,'BT'],[/\b(?:semarang|surakarta|jateng)\b/i,'JT'],[/\b(?:yogyakarta|jogja|yogya)\b/i,'YO'],[/\b(?:surabaya|malang|jatim)\b/i,'JI'],[/\b(?:medan|sumut)\b/i,'SU'],[/\b(?:banda aceh|aceh)\b/i,'AC'],[/\b(?:padang|sumbar)\b/i,'SB'],[/\b(?:pekanbaru|riau)\b/i,'RI'],[/\b(?:batam|tanjung ?pinang|kepri)\b/i,'KR'],[/\b(?:jambi)\b/i,'JA'],[/\b(?:bengkulu)\b/i,'BE'],[/\b(?:palembang|sumsel)\b/i,'SS'],[/\b(?:pangkal ?pinang|bangka|belitung|babel)\b/i,'BB'],[/\b(?:bandar lampung|lampung)\b/i,'LA'],[/\b(?:pontianak|kalbar)\b/i,'KB'],[/\b(?:banjarmasin|banjarbaru|kalsel)\b/i,'KS'],[/\b(?:palangka ?raya|kalteng)\b/i,'KT'],[/\b(?:tanjung selor|kaltara|kalimantan utara)\b/i,'KU'],[/\b(?:makassar|sulsel)\b/i,'SN'],[/\b(?:mamuju|sulbar)\b/i,'SR'],[/\b(?:manado|sulut)\b/i,'SA'],[/\b(?:kota palu|sulteng)\b/i,'ST'],[/\b(?:kendari|sultra)\b/i,'SG'],[/\b(?:gorontalo)\b/i,'GO'],[/\b(?:sofifi|ternate|malut|maluku utara)\b/i,'MU'],[/\b(?:ambon|maluku)\b/i,'MA'],[/\b(?:mataram|ntb)\b/i,'NB'],[/\b(?:kupang|ntt)\b/i,'NT']];
+function kCity(t){const f=CITYRX.find(x=>x[0].test(t));return f?TG.find(g=>g[0]===f[1]):null}
+function kEmit(y,g,risk,txt,src){if(!kbuilt)return;const up=(o,k)=>{o[k]=(o[k]||0)+1},s=txt.slice(0,80);if(g)kev.push({t:g,y,b:kwt,loc:1});kct[y]++;kc++;kbk[y][179]++;up(kas,src);if(g)up(kts,g[1]);up(kvt,KT[y][0]);up(knr,s.slice(0,48));if(g){const k=g[0]+'|'+s,o=kagg[k]=kagg[k]||{p:g[0],i:s,v:0,rs:0};o.v++;o.rs+=risk}klg.unshift(new Date().toISOString().slice(11,19)+' '+src+' \u00b7 '+(g?g[1]:'tanpa lokasi')+' \u00b7 risiko '+risk);klg.length=Math.min(klg.length,5);kUI()}
+function kReal(t,r){if(r.risk<40)return;kEmit(r.sara?0:3,kCity(t)||TG[0],r.risk,t,'Analisis Konten')}
+function kBuzz(r){r.cls.forEach(c=>{const pv=c.ix.map(k=>r.rows[k].pv).filter(Boolean),p=pv.sort((a,b)=>pv.filter(v=>v===a).length-pv.filter(v=>v===b).length).pop();kEmit(1,TG.find(x=>x[0]===p)||TG[0],Math.min(100,r.idx+20),r.rows[c.ix[0]].tx,'Deteksi Buzzer ('+c.us.size+' akun)')})}
+let fws=null,fc=[0,0,0];const fSt=m=>{$('#fst').textContent=m};
+$('#fgo').onclick=()=>{if(fws){fws.close();return}
+try{fws=new WebSocket('wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post')}catch(e){fws=null;fSt('Koneksi tidak diizinkan di halaman ini. Gunakan versi file mandiri.');return}
+fSt('Menyambung...');$('#fgo').textContent='Putuskan';fws.onopen=()=>fSt('Tersambung. Menunggu unggahan berbahasa Indonesia...');
+fws.onerror=()=>fSt('Gagal tersambung. Kemungkinan diblokir halaman ini; coba versi file mandiri.');fws.onclose=()=>{fws=null;$('#fgo').textContent='Sambungkan'};
+fws.onmessage=e=>{fc[0]++;if(fc[0]%20===0)$('#fn1').textContent=fc[0];const d=e.data;if(d.indexOf('"id"')<0)return;let j;try{j=JSON.parse(d)}catch(x){return}const r=j.commit&&j.commit.record;if(!r||j.commit.operation!=='create'||!r.text||!(r.langs||[]).includes('id'))return;fc[1]++;$('#fn2').textContent=fc[1];
+const h=heur(r.text);if(h.risk<45)return;fc[2]++;$('#fn3').textContent=fc[2];const g=kCity(r.text);kEmit(h.sara?0:3,g,h.risk,r.text,'Bluesky');
+fAdd({risk:h.risk,src:'Bluesky (langsung)',text:r.text},g)}};
+let fes=null;
+let fAll=[],fRev=[];try{fRev=JSON.parse(localStorage.getItem('bs_rev')||'[]')}catch(e){}
+const svRev=()=>{try{localStorage.setItem('bs_rev',JSON.stringify(fRev))}catch(e){}};
+const csvc=v=>{v=String(v==null?'':v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+const csvOf=(hd,rows)=>'﻿'+[hd.join(',')].concat(rows.map(r=>r.map(csvc).join(','))).join('\r\n');
+const dlFile=(name,blob)=>{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)};
+const stamp=()=>new Date().toISOString().slice(0,16).replace(/[-:T]/g,'');
+function fSum(){const n=fRev.length,ok=fRev.filter(x=>x.v).length;$('#frs').innerHTML=n?`Ditinjau <b>${n}</b> · tepat <b>${ok}</b> · salah tandai <b>${n-ok}</b> · presisi <b>${Math.round(ok/n*100)}%</b>${n<30?' <span class=note>(sampel belum cukup, targetkan minimal 30)</span>':''}`:'Belum ada yang ditinjau. Tandai hasil di bawah untuk mengukur presisi penilaian pada data nyata.'}
+function fAdd(h,g){const ts=new Date().toISOString();fAll.unshift({ts,src:h.src,risk:h.risk,co:h.coordinated||0,city:g?g[1]:'',acct:h.acct||'',text:h.text.slice(0,280)});if(fAll.length>1000)fAll.pop();
+const L=$('#flist'),d=document.createElement('div');d.className='bti';d.style.marginBottom='6px';
+d.innerHTML=`<b>${h.risk}</b> · ${esc(h.src)}${h.coordinated?' · '+h.coordinated+' akun, teks serupa':''}${g?' · '+esc(g[1]):''}<br>${esc(h.text.slice(0,160))}${h.meta?`<br><span class=note>sampel akun: ${h.meta.newAccounts}/${h.meta.sampled} berusia kurang dari 30 hari, median ${h.meta.medianAgeDays} hari</span>`:''}<div class=row style=margin-top:6px><button class='btn alt' data-v=1>Tepat</button><button class='btn alt' data-v=0>Salah tandai</button></div>`;
+d.querySelectorAll('button').forEach(b=>b.onclick=()=>{const v=+b.dataset.v;fRev.push({ts,src:h.src,risk:h.risk,v,text:h.text.slice(0,200)});svRev();fSum();d.querySelector('.row').innerHTML='<span class=note>Tercatat: '+(v?'tepat':'salah tandai')+'</span>'});
+L.prepend(d);while(L.children.length>8)L.lastChild.remove()}
+$('#fkc').onclick=()=>{if(fes){fes.close();fes=null;$('#fkc').textContent='Hubungkan kolektor';fSt('Kolektor diputus.');return}
+if(ksim)$('#ksm').click();const u=($('#fk').value.trim()||'http://localhost:8787').replace(/\/$/,'');
+try{fes=new EventSource(u+'/events')}catch(e){fes=null;fSt('Koneksi tidak diizinkan di halaman ini. Buka versi berkas mandiri dari komputer Anda.');return}
+fSt('Menyambung ke kolektor...');$('#fkc').textContent='Putuskan';
+fes.onopen=()=>fSt('Kolektor tersambung: '+u);
+fes.onerror=()=>fSt('Kolektor tidak terjangkau. Pastikan server berjalan dan halaman dibuka dari berkas lokal (bukan tautan terbit).');
+fes.addEventListener('stat',e=>{const s=JSON.parse(e.data);$('#fn1').textContent=s.seen;$('#fn2').textContent=s.id;$('#fn3').textContent=s.flagged});
+fes.addEventListener('hit',e=>{const h=JSON.parse(e.data),g=h.city?TG.find(x=>x[0]===h.city):null;kEmit(h.type,g,h.risk,h.text,h.src);fAdd(h,g)})};
+fSum();
+$('#fcsv').onclick=()=>{if(!fAll.length){fSt('Belum ada hasil untuk diunduh.');return}dlFile('hasil-feed-'+stamp()+'.csv',new Blob([csvOf(['waktu','sumber','risiko','akun_serentak','wilayah','akun_hash','teks'],fAll.map(r=>[r.ts,r.src,r.risk,r.co,r.city,r.acct,r.text]))],{type:'text/csv;charset=utf-8'}))};
+$('#frcsv').onclick=()=>{if(!fRev.length){fSt('Belum ada tinjauan.');return}dlFile('tinjauan-'+stamp()+'.csv',new Blob([csvOf(['waktu','sumber','risiko','penilaian','teks'],fRev.map(r=>[r.ts,r.src,r.risk,r.v?'tepat':'salah_tandai',r.text]))],{type:'text/csv;charset=utf-8'}))};
+$('#frclr').onclick=()=>{if(fRev.length&&!confirm('Hapus semua tinjauan di peramban ini?'))return;fRev=[];svRev();fSum()};

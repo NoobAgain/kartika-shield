@@ -1,8 +1,9 @@
 // Kartika Shield Collector: mengumpulkan unggahan publik NYATA, menilainya, dan menyiarkannya ke dasbor lewat SSE.
 // Butuh Node.js >= 22 (WebSocket dan fetch bawaan). Tanpa dependensi.  Jalankan: node server.js
-const http = require('http'), crypto = require('crypto');
+const http = require('http'), crypto = require('crypto'), fs = require('fs');
 const PORT = +process.env.PORT || 8787;
 const HOST = process.env.HOST || '127.0.0.1';              // hanya komputer ini; isi 0.0.0.0 bila sengaja ingin dibuka ke jaringan
+const LOG_CSV = process.env.LOG_CSV || '';                    // opsional: simpan hasil ke berkas CSV (akun tetap berupa hash) untuk ditinjau manual
 const MAX_CLIENTS = +process.env.MAX_CLIENTS || 20;
 const ALLOW = (process.env.ALLOW_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
 const okOrigin = o => o === 'null' || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o || '') || ALLOW.includes(o);  // 'null' = berkas HTML lokal
@@ -31,7 +32,15 @@ function heur(t) {
 const norm = t => t.toLowerCase().replace(/https?:\/\/\S+|@\w+/g, '').replace(/4/g,'a').replace(/3/g,'e').replace(/1/g,'i').replace(/0/g,'o').replace(/(.)\1{2,}/g,'$1').replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
 const anon = did => crypto.createHash('sha256').update(did).digest('hex').slice(0, 8); // akun tidak ditampilkan apa adanya
 
-function emit(h) { h.ts = new Date().toISOString(); stat.flagged++; backlog.push(h); if (backlog.length > 50) backlog.shift(); send('hit', h); }
+const csvc = v => { v = String(v == null ? '' : v); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+function logCsv(h) {
+  if (!LOG_CSV) return;
+  try {
+    if (!fs.existsSync(LOG_CSV)) fs.writeFileSync(LOG_CSV, '\ufeffwaktu,sumber,risiko,akun_serentak,wilayah,akun_hash,teks,penilaian_manual\r\n');
+    fs.appendFileSync(LOG_CSV, [h.ts, h.src, h.risk, h.coordinated || 0, h.city || '', h.acct || '', h.text, ''].map(csvc).join(',') + '\r\n');
+  } catch (e) { console.log('Gagal menulis CSV:', e.message); }
+}
+function emit(h) { h.ts = new Date().toISOString(); stat.flagged++; logCsv(h); backlog.push(h); if (backlog.length > 50) backlog.shift(); send('hit', h); }
 
 async function profileStats(dids) {   // umur akun dari profil publik Bluesky (opsional, gagal = dilewati)
   const out = [];
