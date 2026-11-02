@@ -22,7 +22,32 @@ const nb=acc.filter(a=>a.s>=70).length,idx=Math.round(100*(.5*inC.size/n+.3*burs
 const tags={};rows.forEach(r=>(r.tx.match(/#\w+/g)||[]).forEach(h=>tags[h.toLowerCase()]=(tags[h.toLowerCase()]||0)+1));
 return{n,acc:acc.sort((a,b)=>b.s-a.s),cls,idx,nb,burst:burst.size,tags,rows}}
 $("#bex").onclick=()=>$("#bin").value=SMP.map((l,i)=>l+"|"+["JK","JB","JT","JI","KI","JK","JB","BA","PA","PH","SN","JK"][i]).join("\n");
-$("#bgo").onclick=()=>{const rows=parseB($("#bin").value);if(rows.length<3){$("#bres").innerHTML='<div class="card">Minimal 3 baris dengan format yang benar. Coba tombol Muat data contoh.</div>';return}showB(lastR=runB(rows));kBuzz(lastR)};
+// Validasi CSV: tolak baris rusak, buang duplikat persis, laporkan semuanya
+function parseBV(t){const R={rows:[],rej:[],dup:0,warn:[],total:0,hdr:false,cut:false},seen=new Set();let first=true;
+t=String(t||'').replace(/^\uFEFF/,'').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+t.split(/\r?\n/).forEach((raw,i)=>{const l=raw.trim();if(!l)return;const p=l.split(',');
+if(first){first=false;if(p.length>=2&&isNaN(+p[1].trim())){R.hdr=true;return}}
+R.total++;const no=i+1,bad=w=>R.rej.push({n:no,w,l:l.slice(0,90)});
+if(R.rows.length>=5000){R.cut=true;return}
+if(p.length<6)return bad('kolom kurang dari 6');
+const u=p[0].trim().replace(/^@/,'');if(!u)return bad('akun kosong');if(u.length>64)return bad('akun lebih dari 64 karakter');if(/\s/.test(u))return bad('akun mengandung spasi');
+const nm=[p[1],p[2],p[3]].map(x=>x.trim());if(nm.some(x=>!/^\d+$/.test(x)))return bad('umur, follower, atau following bukan angka bulat');
+const [age,fo,fi]=nm.map(Number);if(age>36500||fo>2e9||fi>2e9)return bad('angka di luar rentang wajar');
+const m=p[4].trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);if(!m)return bad('jam tidak valid, harus HH:MM');
+let tail=p.slice(5).join(',').trim(),pv=((tail.match(/\|([A-Za-z]{2})\s*$/)||[])[1]||'').toUpperCase();tail=tail.replace(/\|[A-Za-z]{2}\s*$/,'').trim().replace(/^"(.*)"$/,'$1').replace(/\s+/g,' ');
+if(tail.length<3)return bad('teks kosong atau terlalu pendek');
+if(tail.length>2000){tail=tail.slice(0,2000);R.warn.push({n:no,w:'teks dipotong 2000 karakter'})}
+if(pv&&!PV.some(x=>x.c===pv)){R.warn.push({n:no,w:'kode provinsi "'+pv+'" tidak dikenal, dikosongkan'});pv=''}
+const k=u+'|'+m[0]+'|'+tail.toLowerCase();if(seen.has(k)){R.dup++;return}seen.add(k);
+R.rows.push({u,age,fo,fi,tm:+m[1]*60+ +m[2],tx:tail,pv})});return R}
+const bClean=R=>R.rows.map(r=>[r.u,r.age,r.fo,r.fi,String(Math.floor(r.tm/60)).padStart(2,'0')+':'+String(r.tm%60).padStart(2,'0'),r.tx+(r.pv?'|'+r.pv:'')].join(',')).join('\n');
+let bRej=[];
+function bRep(R){bRej=R.rej;const bad=R.rej.length,ok=R.rows.length,all=bad+R.dup+(R.warn.length&&0);
+const li=R.rej.slice(0,12).map(x=>`<li>baris ${x.n}: ${esc(x.w)} <span class=note>(${esc(x.l)})</span></li>`).join(''),wi=R.warn.slice(0,5).map(x=>`<li>baris ${x.n}: ${esc(x.w)}</li>`).join('');
+$('#bq').innerHTML=R.total||R.hdr?`<div class="card"><b>Pemeriksaan data</b>: ${R.total} baris dibaca · <b style="color:#15803d">${ok} diterima</b> · <b style="color:${bad?'#b3202a':'inherit'}">${bad} ditolak</b> · ${R.dup} duplikat dibuang${R.warn.length?' · '+R.warn.length+' peringatan':''}${R.cut?' · dibatasi 5000 baris pertama':''}${R.hdr?' · baris judul dilewati':''}${bad?`<ul style="margin:8px 0 0 18px">${li}</ul>${bad>12?`<p class=note>…dan ${bad-12} baris lain.</p>`:''}`:''}${wi?`<ul style="margin:8px 0 0 18px">${wi}</ul>`:''}<div class="row">${bad||R.dup?'<button class="btn alt" id="bcl">Pakai data bersih</button>':''}${bad?'<button class="btn alt" id="brj">Unduh baris ditolak</button>':''}</div></div>`:'';
+const c=$('#bcl');if(c)c.onclick=()=>{$('#bin').value=bClean(R);bRep(parseBV($('#bin').value))};
+const j=$('#brj');if(j)j.onclick=()=>dlFile('baris-ditolak-'+stamp()+'.csv',new Blob(['\uFEFFbaris,alasan,isi\n'+bRej.map(x=>[x.n,csvc(x.w),csvc(x.l)].join(',')).join('\n')],{type:'text/csv'}))}
+$("#bgo").onclick=()=>{const R=parseBV($("#bin").value);bRep(R);if(R.rows.length<3){$("#bres").innerHTML='<div class="card">Minimal 3 baris valid. Lihat pemeriksaan data di atas, atau coba tombol Muat data contoh.</div>';return}showB(lastR=runB(R.rows));kBuzz(lastR)};
 function showB(r){const vd=r.idx>=60?["Indikasi kuat operasi terkoordinasi","#b3202a"]:r.idx>=35?["Indikasi sedang, perlu pemantauan","#a16207"]:["Dominan organik","#15803d"];
 const lv=s=>s>=70?["Bot/buzzer","#b3202a"]:s>=40?["Mencurigakan","#a16207"]:["Organik","#15803d"];
 const ts=r.rows.map(x=>x.tm),mn=Math.min(...ts),mx=Math.max(...ts),B=Math.min(24,Math.max(6,Math.ceil((mx-mn+1)/10))),sz=(mx-mn+1)/B,bk=Array(B).fill(0),hot=Array(B).fill(0);
@@ -46,4 +71,4 @@ $('#bpm').onclick=()=>{if(!lastR)return;const g={};lastR.cls.forEach(c=>c.ix.for
 const EV=[['ba_881234,4,6,1100,10:00,Vaksin ini racun untuk umat kita sebarkan segera',1],['info_umat_5521,8,9,900,10:01,vaksin ini racun untuk umat kita, sebarkan!!',1],['peduli_bangsa99120,15,14,1300,10:01,V4ksin ini racun untuk umat kita sebarkan segera',1],['wargaresah_207,700,150,300,10:02,Vaksin ini racun untuk umat kita sebarkan segera',1],['sahabat_nkri,520,60,200,10:04,vaksin ini racun untuk umat kita sebarkan segera ya',1],['dewi_k,1200,430,380,10:03,Ada yang tahu jadwal vaksin di puskesmas Gubeng?',0],['rudi_hartono,15,5,60,10:05,Baru pindah kerja nih, mohon doanya',0],['nadia88,25,10,120,10:06,Resep soto ayam favoritku akhirnya kucoba',0],['kopi_pagi,2400,900,500,10:10,Vaksin booster dosis kedua sudah selesai tadi pagi',0],['joko_p,300,120,200,10:12,Harga bensin naik lagi ya bulan ini',0],['pasukan_aksi_44120,6,5,1400,14:00,Hentikan impor beras kita dijajah pangan asing #BoikotImpor',1],['aksi_nyata_90231,9,8,1200,14:00,Hentikan impor beras!! kita dijajah pangan asing #BoikotImpor',1],['patriot_pangan_5512,11,12,990,14:01,hentikan impor beras kita dijajah pangan asing',1],['relawan_donor1,900,300,250,16:00,Ayo donor darah Minggu ini di balai desa jam 8 pagi',0],['relawan_donor2,1500,420,300,16:01,Ayo donor darah Minggu ini di balai desa jam 8 pagi',0],['relawan_donor3,700,210,260,16:02,ayo donor darah minggu ini di balai desa jam 8 pagi',0],['relawan_donor4,1100,380,320,16:03,Ayo donor darah Minggu ini di balai desa jam 8 pagi!',0],['spam_user73381920,3,2,2000,15:00,Klik link ini untuk hadiah gratis sekarang',1]];
 $('#bev').onclick=()=>{const r=runB(parseB(EV.map(e=>e[0]).join('\n'))),sc=[];r.acc.forEach(a=>sc[a.i]=a.s);const pc=v=>Math.round(v*100)+'%',m=T=>{let tp=0,fp=0,fn=0,tn=0;EV.forEach((e,i)=>{const p=sc[i]>=T;if(p&&e[1])tp++;else if(p)fp++;else if(e[1])fn++;else tn++});const pr=tp/Math.max(tp+fp,1),rc=tp/Math.max(tp+fn,1);return`<tr><td>${T}+</td><td>${tp}</td><td>${fp}</td><td>${fn}</td><td>${tn}</td><td>${pc(pr)}</td><td>${pc(rc)}</td><td>${pc(2*pr*rc/Math.max(pr+rc,1e-9))}</td></tr>`};
 $('#bev2').innerHTML=`<div class=card><h2>Uji akurasi internal (${EV.length} akun berlabel)</h2><div class=tw><table><tr><th>Ambang skor</th><th>TP</th><th>FP</th><th>FN</th><th>TN</th><th>Precision</th><th>Recall</th><th>F1</th></tr>${m(70)}${m(40)}</table></div><p class=note>Data sintetis buatan sendiri, termasuk kasus sulit: akun lama yang diretas, spam berdiri sendiri, dan kampanye relawan sah yang serempak (rawan salah tandai). Ini menunjukkan pertukaran antara ambang ketat dan longgar, bukan klaim akurasi di lapangan. Kalibrasi sebenarnya butuh dataset nyata.</p></div>`};
-$('#bfile').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{const L=t.split(/\r?\n/);if(L.length&&isNaN(+(L[0].split(',')[1]||'x')))L.shift();$('#bin').value=L.join('\n')})};
+$('#bfile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>5e6){$('#bq').innerHTML='<div class="card">Berkas lebih dari 5 MB. Pecah menjadi beberapa berkas.</div>';return}f.text().then(t=>{$('#bin').value=t.replace(/^\uFEFF/,'');bRep(parseBV(t))})};

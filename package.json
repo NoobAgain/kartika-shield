@@ -5,7 +5,9 @@
   "description": "Dasbor anti disinformasi Kartika Shield dan kolektor datanya",
   "scripts": {
     "build": "node tools/build.js",
-    "collector": "node collector/server.js"
+    "collector": "node collector/server.js",
+    "buzzer": "node collector/ambil-buzzer.js",
+    "youtube": "node collector/ambil-youtube.js"
   },
   "engines": { "node": ">=22" }
 }

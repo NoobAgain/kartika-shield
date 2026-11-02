@@ -22,9 +22,9 @@
 <div class="row"><button class="btn alt qk">Cara membalas hoaks SARA di grup WhatsApp keluarga</button><button class="btn alt qk">Apa tanda akun buzzer terkoordinasi?</button></div></div></section>
 
 <section id="b" class="hidden"><div class="card"><h2>Deteksi Bot &amp; Buzzer Terkoordinasi</h2>
-<p class="note">Tempel data unggahan, satu baris per unggahan: <code>akun,umur_akun_hari,follower,following,jam(HH:MM),teks|KODE</code> (kode provinsi opsional, mis. <code>|JK</code>, agar bisa dikirim ke peta). Analisis berjalan lokal di peramban: kemiripan teks, lonjakan waktu, dan profil akun.</p>
+<p class="note">Tempel data unggahan, satu baris per unggahan: <code>akun,umur_akun_hari,follower,following,jam(HH:MM),teks|KODE</code> (kode provinsi opsional, mis. <code>|JK</code>, agar bisa dikirim ke peta). Data bisa diambil otomatis dari Bluesky atau YouTube dengan <code>collector/ambil-buzzer.js</code> atau <code>collector/ambil-youtube.js</code> (lihat README). Analisis berjalan lokal di peramban: kemiripan teks, lonjakan waktu, dan profil akun.</p>
 <textarea id="bin" style="min-height:160px" placeholder="buzz_88412,6,12,950,19:02,Teks unggahan…"></textarea>
-<input type="file" id="bfile" accept=".csv,.txt" style="margin-top:8px"><div class="row"><button class="btn" id="bgo">Deteksi</button><button class="btn alt" id="bex">Muat data contoh</button><button class="btn alt" id="bev">Uji akurasi</button><button class="btn alt" id="bpm">Kirim ke Peta Dini</button><button class="btn alt" id="bki">Jadikan Insiden</button></div></div><div id="bres"></div><div id="bev2"></div></section>
+<input type="file" id="bfile" accept=".csv,.txt" style="margin-top:8px"><div class="row"><button class="btn" id="bgo">Deteksi</button><button class="btn alt" id="bex">Muat data contoh</button><button class="btn alt" id="bev">Uji akurasi</button><button class="btn alt" id="bpm">Kirim ke Peta Dini</button><button class="btn alt" id="bki">Jadikan Insiden</button></div></div><div id="bq"></div><div id="bres"></div><div id="bev2"></div></section>
 <section id='k'><div class='ks' id='ks'><canvas id='kc'></canvas>
 <div class='kbr'><img class='klg' alt='Logo Kartika Shield' src='assets/logo-shield.png'><div class='kbt'><img class='kwm' alt='KARTIKA SHIELD' src='assets/logo-wordmark.png'><span>Disinformation Threat Exchange</span><div class='kbm'><span class='kbg' id='kbg'>DATA NYATA</span><small>Kartika Cyber Hackathon 2026</small></div></div></div>
 <div class='kat'><h4>TIPE ANCAMAN</h4><div class='kl' id='kl'></div></div>
@@ -66,6 +66,11 @@
 <div class="row"><button class="btn alt" id="rst">Reset data</button></div>
 <p class="note">Data hanya tersimpan di peramban Anda dan tidak dibagikan.</p></div></section>
 
+<section id="x" class="hidden"><div class="card"><h2>Pusat Data</h2>
+<p class="note">Semua data aplikasi (riwayat, laporan peta, insiden, tinjauan, saluran berita) tersimpan di peramban ini. Unduh cadangan secara berkala: itu satu-satunya salinan yang tidak hilang saat data peramban dibersihkan.</p>
+<div id="xst"></div>
+<div class="row"><button class="btn" id="xbk">Unduh cadangan (JSON)</button><label class="btn alt" style="cursor:pointer">Pulihkan dari berkas<input type="file" id="xfile" accept=".json,application/json" style="display:none"></label><button class="btn alt" id="xdd">Cek duplikat</button><button class="btn alt" id="xun">Urungkan pemulihan</button><button class="btn alt" id="xps">Minta penyimpanan permanen</button><button class="btn alt" id="xwp">Hapus semua data</button></div>
+<div id="xprev"></div></div></section>
 <section id="e" class="hidden"><div class="card"><h2>Tiga modus proxy war informasi</h2>
 <h3>1. Deepfake &amp; konten sintetis AI</h3><p>Memalsukan ucapan figur publik untuk menyulut konflik identitas. Periksa kedipan mata, sinkron bibir, dan cari sumber asli.</p>
 <h3>2. Jaringan buzzer terkoordinasi</h3><p>Amplifikasi masif menciptakan ilusi konsensus. Tandanya: akun baru, teks nyaris sama, posting serempak.</p>
@@ -87,4 +92,5 @@
 <script src="js/07-feed.js"></script>
 <script src="js/08-insiden.js"></script>
 <script src="js/09-bot.js"></script>
+<script src="js/10-data.js"></script>
 </body></html>
