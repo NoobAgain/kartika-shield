@@ -9,8 +9,8 @@ Penilaian adalah **indikator pola bahasa dan perilaku, bukan putusan benar atau 
 index.html          kerangka halaman
 assets/             gaya (style.css) dan logo
 js/                 kode aplikasi, satu berkas per fitur (dimuat berurutan, angka di awal nama menentukan urutan)
-data/               data statis (batas provinsi, lambang, peta dunia, katalog DISARM)
-collector/          kolektor Bluesky/RSS (Node.js >= 22, tanpa dependensi)
+data/               data statis (batas provinsi, lambang, peta dunia)
+collector/          Caraka (agen siaga), bot pengambil data, kolektor Bluesky/RSS (Node.js >= 22, tanpa dependensi)
 tools/build.js      menggabungkan semuanya menjadi satu berkas
 dist/               hasil build, kartika-shield.html (berkas tunggal mandiri)
 ```
@@ -84,7 +84,6 @@ Pencarian video memakai 100 unit per kata kunci, sedangkan mengambil komentar da
 - Peta Peringatan Dini: unduh PNG, cetak atau simpan PDF.
 - Peta Live: unduh PNG.
 - Feed: CSV hasil dan CSV tinjauan.
-- Insiden: bundel STIX 2.1.
 
 ## Privasi dan batasan
 - Kolektor tidak menulis ke disk kecuali `LOG_CSV` diisi. Akun ditampilkan sebagai hash 8 karakter.
@@ -99,6 +98,7 @@ Atribusi data dan lambang: lihat `THIRD_PARTY.md`.
 |---|---|
 | Bluesky | Ya, `ambil-buzzer.js` (App Password) |
 | YouTube | Ya, `ambil-youtube.js` (kunci API gratis) |
+| Facebook | Hanya Halaman milik Anda, `ambil-facebook.js` (token Halaman) |
 | TikTok | Hanya lewat Research API untuk peneliti yang disetujui |
 | Facebook | Tidak ada pencarian publik. Meta Content Library hanya untuk peneliti yang disetujui |
 | Instagram | Hanya akun bisnis sendiri, pencarian tagar sangat terbatas |
@@ -108,12 +108,63 @@ Menirukan login akun pribadi untuk mengambil data dari platform di atas melangga
 
 ## Pusat Data (penyimpanan dan kualitas data)
 
-Jendela **Data** di dock mengelola semua data aplikasi (riwayat analisis, laporan peta, insiden, tinjauan feed, saluran berita).
+Jendela **Data** di dock mengelola semua data aplikasi (riwayat analisis, laporan peta, tinjauan feed).
 
 - **Cadangan JSON**: unduh dan pulihkan seluruh data. Berkas memuat checksum, jadi berkas rusak ditolak. Saat memulihkan ada pratinjau (jumlah di berkas, baris rusak yang dibuang, hasil gabung) dan pilihan *Gabungkan* atau *Timpa*. Keadaan sebelumnya disimpan dulu dan bisa diurungkan.
 - **Salinan otomatis**: data disalin ke IndexedDB tiap 10 detik bila berubah. Bila data lokal hilang (misalnya riwayat peramban dibersihkan) muncul tawaran memulihkan. Aplikasi juga meminta *penyimpanan permanen* ke peramban. Salinan ini tetap di peramban yang sama, jadi unduh cadangan berkas secara berkala. Aplikasi mengingatkan bila cadangan lebih dari 7 hari.
-- **Validasi impor**: tiap record dicek bentuk dan rentangnya. ID video atau saluran YouTube yang tidak sesuai pola ditolak.
-- **Deteksi duplikat**: record identik (insiden juga bila namanya sama) dihitung dan dapat dihapus.
+- **Validasi impor**: tiap record dicek bentuk dan rentangnya. Record dengan bentuk atau rentang tidak wajar dibuang.
+- **Deteksi duplikat**: record identik dihitung dan dapat dihapus.
 - **Validasi CSV Buzzer**: baris dengan kolom kurang, angka bukan bulat, jam bukan HH:MM, atau teks kosong ditolak dengan nomor baris dan alasan. Duplikat persis dibuang, kode provinsi tak dikenal dikosongkan, maksimum 5000 baris dan 5 MB. Tersedia tombol *Pakai data bersih* dan *Unduh baris ditolak*.
 
 Uji otomatis: `t10.js` (tidak disertakan di paket).
+
+## Bot Facebook (Halaman yang Anda kelola)
+
+Facebook tidak punya API pencarian postingan publik (CrowdTangle sudah ditutup), jadi bot ini hanya membaca komentar di **Halaman yang Anda kelola**. Facebook juga tidak membuka umur akun, follower, dan following pengomentar, sehingga kolom itu diisi nilai netral (365, 100, 100) dan deteksi bersandar pada kemiripan teks, waktu serempak, dan pola nama.
+
+1. Buat aplikasi di developers.facebook.com (jenis Business), lalu buka Graph API Explorer.
+2. Pilih Halaman Anda, minta izin `pages_show_list`, `pages_read_engagement`, `pages_read_user_content`, lalu buat **Page access token**.
+3. Jalankan (token lewat variabel lingkungan, jangan di-commit):
+```
+$env:FB_PAGE_TOKEN="EAA..."
+$env:FB_PAGE_ID="ID_HALAMAN"
+node collector/ambil-facebook.js --jam 24
+```
+Token dikirim lewat header, tidak pernah dicetak, dan tautan paginasi yang memuat token tidak diikuti. Hasil `facebook.csv` diunggah di tab Deteksi Buzzer. Untuk izin tertentu Meta bisa meminta App Review bila aplikasi dipakai pihak lain, tetapi untuk Halaman milik sendiri dengan akun admin/pengembang aplikasi biasanya tidak perlu.
+
+## Offline penuh
+
+d3 dan topojson disertakan di `vendor/`, dan `dist/kartika-shield.html` berjalan tanpa internet.
+
+## Demo terpandu
+
+Saat dibuka pertama kali muncul layar pembuka. Tombol **Demo** di peta menjalankan alur 4 langkah dengan data contoh (analisis, buzzer, peta dini, pantauan). Data Anda dicadangkan sebelum demo dan dikembalikan sesudahnya.
+
+## Evaluasi akurasi
+
+Lihat `docs/EVALUASI.md` untuk metode, angka, dan keterbatasan. Penilai konten memakai aturan ditambah model ringan terlatih. Alat uji ada di jendela **Data**.
+
+## Caraka, agen pemantau yang selalu siaga
+
+`collector/caraka.js` berjalan terus dan memantau sumber resmi secara berkala: Bluesky (pencarian kata kunci), YouTube (komentar video terbaru), Facebook (Halaman milik Anda), dan RSS berita. Hasilnya dinilai, teks kembar lintas akun dideteksi, lalu disiarkan ke dasbor.
+
+**Menyiapkan**
+1. Salin `collector/caraka.config.contoh.json` menjadi `caraka.config.json`, isi `kataKunci`, dan isi `izinkanAsal` dengan alamat situs Anda bila dasbor dibuka dari GitHub Pages.
+2. Di Windows, salin `rahasia-caraka.contoh.bat` menjadi `rahasia-caraka.bat` lalu isi kunci dan token (berkas ini diabaikan git). Di sistem lain, isi variabel lingkungan yang sama.
+3. Uji dulu: `node collector/caraka.js --cek` (memeriksa konfigurasi dan tiap kredensial tanpa menjalankan pemantauan).
+4. Jalankan: `jalankan-caraka.bat` (Windows, otomatis mulai ulang bila berhenti) atau `node collector/caraka.js`. Untuk server, bungkus dengan `pm2` atau `systemd`.
+
+**Memakai di dasbor**
+- Tab **Feed**: isi alamat `http://localhost:8787`, tekan **Hubungkan kolektor**. Temuan muncul langsung di peta dan daftar.
+- Tab **Buzzer**: tombol **Ambil dari Caraka** memuat data 24 jam terakhir (`/buzzer.csv`) dan langsung menganalisisnya.
+- Status tiap sumber: `http://localhost:8787/stats`.
+
+**Perilaku siaga**
+- Tiap sumber berjalan sendiri. Bila satu gagal, ia mencoba lagi dengan jeda bertambah dan sumber lain tetap jalan.
+- Kredensial ditolak menghentikan sumber itu saja (tidak memukul API berulang) dan statusnya `ditolak`.
+- Kuota YouTube dijaga: pencarian video (100 unit) dibatasi tiap `cariVideoMenit` dan ada batas harian `kuotaHarian`. Saat habis, hanya komentar video yang sudah dikenal yang dipantau.
+- ID yang sudah diproses dan buffer 24 jam disimpan di `caraka-data/`, jadi restart tidak mengulang data.
+- Akun dianonimkan (hash) kecuali `akunAsli` diaktifkan. Server hanya membaca, hanya mendengar di komputer ini, dan hanya menerima asal yang diizinkan.
+- Facebook tidak membuka umur akun dan follower, jadi nilainya netral. Facebook hanya untuk Halaman yang Anda kelola.
+
+**Batas yang perlu diketahui**: Caraka diuji dengan API tiruan, belum dengan API sungguhan. Ia hanya membaca data publik atau milik Anda lewat API resmi. TikTok, X, dan Instagram tidak punya akses resmi yang bisa dipakai.

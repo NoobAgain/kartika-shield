@@ -7,7 +7,7 @@
 
 <header><h1>Kartika <span>Shield</span></h1>
 <p class="sub">Anti Disinformation Warfare · Kategori Cognitive Domain · Tameng informasi berbasis nilai Bhinneka Tunggal Ika</p></header>
-<nav id="tabs"><button data-t="a" class="on">Analisis Konten</button><button data-t="c">Bot Penjaga</button><button data-t="b">Deteksi Buzzer</button><button data-t="m">Peta Peringatan Dini</button><button data-t="k">Peta Dunia Live</button><button data-t="d">Dashboard</button><button data-t="e">Kenali Modus</button></nav>
+<nav id="tabs"><button data-t="a" class="on">Analisis Konten</button><button data-t="b">Deteksi Buzzer</button><button data-t="m">Peta Peringatan Dini</button><button data-t="k">Peta Dunia Live</button><button data-t="d">Dashboard</button></nav>
 <main>
 <section id="a">
 <div class="card"><h2>Periksa konten mencurigakan</h2>
@@ -16,38 +16,21 @@
 <p class="note">Alat ini menilai pola bahasa, teknik manipulasi, dan risiko SARA. Ini bukan pengganti cek fakta resmi: selalu verifikasi ke sumber primer (tabayyun).</p></div>
 <div id="res"></div></section>
 
-<section id="c" class="hidden"><div class="card"><h2>Bot Penjaga Kartika</h2>
-<div id="chat"><div class="m b">Halo! Saya bisa membantu mengecek klaim, menjelaskan modus proxy war informasi, dan menyusun balasan yang sejuk untuk hoaks SARA di grup keluarga atau medsos.</div></div>
-<div class="row" style="margin-top:0"><input id="q" placeholder="Tanyakan sesuatu…" style="flex:1"><button class="btn" id="send">Kirim</button></div>
-<div class="row"><button class="btn alt qk">Cara membalas hoaks SARA di grup WhatsApp keluarga</button><button class="btn alt qk">Apa tanda akun buzzer terkoordinasi?</button></div></div></section>
 
 <section id="b" class="hidden"><div class="card"><h2>Deteksi Bot &amp; Buzzer Terkoordinasi</h2>
-<p class="note">Tempel data unggahan, satu baris per unggahan: <code>akun,umur_akun_hari,follower,following,jam(HH:MM),teks|KODE</code> (kode provinsi opsional, mis. <code>|JK</code>, agar bisa dikirim ke peta). Data bisa diambil otomatis dari Bluesky atau YouTube dengan <code>collector/ambil-buzzer.js</code> atau <code>collector/ambil-youtube.js</code> (lihat README). Analisis berjalan lokal di peramban: kemiripan teks, lonjakan waktu, dan profil akun.</p>
+<p class="note">Tempel data unggahan, satu baris per unggahan: <code>akun,umur_akun_hari,follower,following,jam(HH:MM),teks|KODE</code> (kode provinsi opsional, mis. <code>|JK</code>, agar bisa dikirim ke peta). Data bisa diambil otomatis dari Bluesky, YouTube, atau Facebook (Halaman Anda) dengan <code>collector/ambil-buzzer.js</code>, <code>ambil-youtube.js</code>, atau <code>ambil-facebook.js</code> (lihat README). Analisis berjalan lokal di peramban: kemiripan teks, lonjakan waktu, dan profil akun.</p>
 <textarea id="bin" style="min-height:160px" placeholder="buzz_88412,6,12,950,19:02,Teks unggahan…"></textarea>
-<input type="file" id="bfile" accept=".csv,.txt" style="margin-top:8px"><div class="row"><button class="btn" id="bgo">Deteksi</button><button class="btn alt" id="bex">Muat data contoh</button><button class="btn alt" id="bev">Uji akurasi</button><button class="btn alt" id="bpm">Kirim ke Peta Dini</button><button class="btn alt" id="bki">Jadikan Insiden</button></div></div><div id="bq"></div><div id="bres"></div><div id="bev2"></div></section>
+<input type="file" id="bfile" accept=".csv,.txt" style="margin-top:8px"><div class="row"><button class="btn" id="bgo">Deteksi</button><button class="btn alt" id="bcar">Ambil dari Caraka</button><button class="btn alt" id="bex">Muat data contoh</button><button class="btn alt" id="bev">Uji akurasi</button><button class="btn alt" id="bpm">Kirim ke Peta Dini</button></div></div><div id="bq"></div><div id="bres"></div><div id="bev2"></div></section>
 <section id='k'><div class='ks' id='ks'><canvas id='kc'></canvas>
 <div class='kbr'><img class='klg' alt='Logo Kartika Shield' src='assets/logo-shield.png'><div class='kbt'><img class='kwm' alt='KARTIKA SHIELD' src='assets/logo-wordmark.png'><span>Disinformation Threat Exchange</span><div class='kbm'><span class='kbg' id='kbg'>DATA NYATA</span><small>Kartika Cyber Hackathon 2026</small></div></div></div>
 <div class='kat'><h4>TIPE ANCAMAN</h4><div class='kl' id='kl'></div></div>
-<div class='kb'><button id='kgl'>Globe</button><button id='kz1'>+</button><button id='kz0'>−</button><button id='ksm'>Mode: Nyata</button><button id='kbd'>Jeda</button><button id='kcol'>Panel</button></div>
+<div class='kb'><button id='kgl'>Globe</button><button id='kz1'>+</button><button id='kz0'>−</button><button id='kb_demo'>Demo</button><button id='ksm'>Mode: Nyata</button><button id='kbd'>Jeda</button><button id='kcol'>Panel</button></div>
 <div class='ktl' id='ktl'><canvas id='ktc'></canvas></div>
-<aside class='ksb' id='ksb'><h3>LIVE DISINFORMATION MAP</h3><small>STATISTIK SESI SIMULASI</small>
+<aside class='ksb' id='ksb'><h3>LIVE DISINFORMATION MAP</h3><small id='ksub'>STATISTIK SESI NYATA</small>
 <div class='kcn'><small id='kcl'>SINYAL NYATA SESI INI</small><b id='kn'>0</b></div>
 <h4 id='kh1'>TOP SUMBER DATA</h4><div id='kb1'></div><h4>TOP WILAYAH DISERANG</h4><div id='kb2'></div><h4>TOP JENIS ANCAMAN</h4><div id='kb3'></div><h4>TOP NARASI</h4><div id='kb4'></div>
 <button id='ksy'>Sinkronkan ke Peta Peringatan Dini</button><button id='kpng' style='margin-top:8px;width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(160,190,255,.3);border-radius:6px;padding:9px;font-size:.78rem'>Unduh gambar peta (PNG)</button><pre id='klog'></pre></aside></div>
 <p class='note' style='margin-top:10px'><span id='kmn'>Mode data nyata: hanya peristiwa dari kolektor, Feed Bluesky, impor CSV, dan analisis Anda yang tampil di peta.</span> Seret peta untuk memutar, gulir untuk zoom. Versi produksi menerima feed nyata (WebSocket/SSE).</p></section>
-<section id="i" class="hidden"><div class="card">
-<div class="row" style="margin-top:0"><button class="btn" id="in_new">Insiden baru</button><button class="btn alt" id="in_ex">Muat contoh</button><button class="btn alt" id="in_st">Statistik</button></div>
-<input id="in_q" placeholder="Cari insiden, aktor, wilayah, atau teknik DISARM" style="margin-top:10px">
-<div id="in_v"></div>
-<p class="note" style="margin-top:12px">Pertukaran intelijen disinformasi berformat STIX 2.1: insiden sebagai <i>intrusion-set</i>, relasi <i>uses</i> (teknik), <i>attributed-to</i> (aktor), <i>targets</i> (wilayah). Katalog teknik: DISARM Framework © DISARM Foundation, CC BY-SA 4.0. Data contoh sintetis.</p></div></section>
-<section id="v" class="hidden"><div class="card"><h2>Live Berita</h2>
-<div class="row" id="vt" style="margin-top:0"></div>
-<div id="vp" style="aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;margin-top:10px"><p class="note" style="padding:16px">Tempel tautan siaran langsung YouTube di bawah, lalu klik Simpan dan tampilkan.</p></div>
-<div class="fm" style="margin-top:10px"><input id="vn" placeholder="Nama saluran, mis. Kompas TV"><input id="vu" placeholder="Tautan live, ID video, atau ID kanal (UC...) agar selalu mengikuti siaran terbaru"></div>
-<div class="row"><button class="btn" id="vs">Simpan &amp; tampilkan</button><a class="btn alt" id="vo" target="_blank" rel="noopener" style="text-decoration:none">Buka di YouTube</a></div>
-<h3>Cek klaim dari siaran</h3><textarea id="vq" style="min-height:70px" placeholder="Ketik kutipan atau judul yang Anda dengar di siaran…"></textarea>
-<div class="row"><button class="btn alt" id="vx">Kirim ke Analisis Konten</button></div>
-<p class="note">Video dimuat langsung dari pemutar resmi YouTube; aplikasi tidak merekam atau menyimpan siaran. Sebagian saluran melarang penyematan. Tautan tersimpan di peramban ini, maksimal 4 saluran.</p></div></section>
 <section id="f" class="hidden"><div class="card"><h2>Feed Sosial Live (Bluesky)</h2>
 <p class="note">Menyambung ke aliran publik Bluesky (Jetstream), menyaring unggahan berbahasa Indonesia, lalu menilainya. Bluesky tidak menyediakan lokasi, jadi peta hanya menerima unggahan yang menyebut nama kota. Teks unggahan hanya berada di memori. Teks yang Anda tinjau (dipotong 200 karakter) tersimpan di peramban ini saja.</p>
 <input id="fk" placeholder="Alamat kolektor, mis. http://localhost:8787" style="margin-bottom:8px"><div class="row" style="margin-top:0"><button class="btn" id="fkc">Hubungkan kolektor</button><button class="btn alt" id="fgo">Sambungkan</button></div>
@@ -67,30 +50,28 @@
 <p class="note">Data hanya tersimpan di peramban Anda dan tidak dibagikan.</p></div></section>
 
 <section id="x" class="hidden"><div class="card"><h2>Pusat Data</h2>
-<p class="note">Semua data aplikasi (riwayat, laporan peta, insiden, tinjauan, saluran berita) tersimpan di peramban ini. Unduh cadangan secara berkala: itu satu-satunya salinan yang tidak hilang saat data peramban dibersihkan.</p>
+<p class="note">Semua data aplikasi (riwayat analisis, laporan peta, tinjauan feed) tersimpan di peramban ini. Unduh cadangan secara berkala: itu satu-satunya salinan yang tidak hilang saat data peramban dibersihkan.</p>
 <div id="xst"></div>
 <div class="row"><button class="btn" id="xbk">Unduh cadangan (JSON)</button><label class="btn alt" style="cursor:pointer">Pulihkan dari berkas<input type="file" id="xfile" accept=".json,application/json" style="display:none"></label><button class="btn alt" id="xdd">Cek duplikat</button><button class="btn alt" id="xun">Urungkan pemulihan</button><button class="btn alt" id="xps">Minta penyimpanan permanen</button><button class="btn alt" id="xwp">Hapus semua data</button></div>
-<div id="xprev"></div></div></section>
-<section id="e" class="hidden"><div class="card"><h2>Tiga modus proxy war informasi</h2>
-<h3>1. Deepfake &amp; konten sintetis AI</h3><p>Memalsukan ucapan figur publik untuk menyulut konflik identitas. Periksa kedipan mata, sinkron bibir, dan cari sumber asli.</p>
-<h3>2. Jaringan buzzer terkoordinasi</h3><p>Amplifikasi masif menciptakan ilusi konsensus. Tandanya: akun baru, teks nyaris sama, posting serempak.</p>
-<h3>3. Filter bubble</h3><p>Algoritma menyodorkan konten searah sehingga memperkuat polarisasi. Ikuti sumber yang beragam.</p>
-<h3>Tameng nilai BTI</h3><div class="bti"><b>Toleransi</b> · verifikasi dengan empati lintas identitas.<br><b>Keharmonisan</b> · tabayyun sebelum sebar.<br><b>Gotong royong</b> · laporkan dan luruskan bersama.</div></div></section>
+<div id="xprev"></div></div>
+<div class="card"><h2>Uji akurasi penilai konten</h2>
+<p class="note">Unggah CSV berlabel dengan kolom <code>teks,label</code> (label: <code>hoaks</code> atau <code>valid</code>, boleh 1 dan 0). Penilai dijalankan pada tiap baris lalu dihitung presisi, recall, F1, dan AUC. Penilai gabungan: aturan pola manipulasi ditambah model ringan terlatih (IDNHoaxCorpus).</p>
+<input type="file" id="xaf" accept=".csv,.txt"><div id="xar"></div></div>
+</section>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
-<script src="data/disarm.js"></script>
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
 <script src="data/world.js"></script>
 <script src="data/provinces.js"></script>
 <script src="data/logos.js"></script>
+<script src="data/model.js"></script>
 <script src="js/01-inti.js"></script>
 <script src="js/02-analisis.js"></script>
 <script src="js/03-buzzer.js"></script>
 <script src="js/04-peta-dini.js"></script>
 <script src="js/05-peta-live.js"></script>
-<script src="js/06-berita.js"></script>
 <script src="js/07-feed.js"></script>
-<script src="js/08-insiden.js"></script>
-<script src="js/09-bot.js"></script>
 <script src="js/10-data.js"></script>
+<script src="js/11-demo.js"></script>
+<script src="js/12-akurasi.js"></script>
 </body></html>

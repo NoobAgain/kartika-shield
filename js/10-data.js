@@ -1,19 +1,16 @@
 // Pusat Data: status penyimpanan, cadangan JSON, salinan otomatis IndexedDB, validasi impor, duplikat
-const XK=[['bs_h','Riwayat analisis'],['bs_m','Laporan peta dini'],['bs_inc','Insiden'],['bs_rev','Tinjauan feed'],['bs_tv','Saluran berita']];
-const XMEM=()=>({bs_h:hist,bs_m:mr,bs_inc:INC,bs_rev:fRev,bs_tv:tv});
+const XK=[['bs_h','Riwayat analisis'],['bs_m','Laporan peta dini'],['bs_rev','Tinjauan feed']];
+const XMEM=()=>({bs_h:hist,bs_m:mr,bs_rev:fRev});
 const isO=o=>o&&typeof o==='object'&&!Array.isArray(o),isS=(v,n)=>typeof v==='string'&&v.length<=n,isN=v=>typeof v==='number'&&isFinite(v);
 // Pemeriksa bentuk tiap koleksi. Mengembalikan true bila record layak disimpan.
 const XV={
 bs_h:o=>isO(o)&&isS(o.v,40)&&isN(o.r)&&isN(o.d),
 bs_m:o=>isO(o)&&isS(o.p,4)&&PV.some(x=>x.c===o.p)&&isS(o.i,400)&&o.i&&isN(o.v)&&o.v>0&&isN(o.r)&&o.r>=0&&o.r<=100,
-bs_inc:o=>isO(o)&&isS(o.id,80)&&o.id&&isS(o.n,300)&&o.n,
-bs_rev:o=>isO(o)&&isS(o.ts,40)&&isN(o.risk)&&(o.v===0||o.v===1)&&isS(o.text,400),
-bs_tv:o=>isO(o)&&isS(o.n,80)&&(!o.id||/^[A-Za-z0-9_-]{11}$/.test(o.id))&&(!o.ch||/^UC[A-Za-z0-9_-]{22}$/.test(o.ch))&&!!(o.id||o.ch)};
+bs_rev:o=>isO(o)&&isS(o.ts,40)&&isN(o.risk)&&(o.v===0||o.v===1)&&isS(o.text,400)};
 const XD={ // kunci duplikat
-bs_h:o=>o.d+'|'+o.v+'|'+o.r,bs_m:o=>[o.p,o.i.trim().toLowerCase(),o.v,o.r].join('|'),bs_inc:o=>o.id,
-bs_rev:o=>o.ts+'|'+o.text,bs_tv:o=>o.id||o.ch};
-const xNm=o=>'n:'+String(o.n).trim().toLowerCase().replace(/\s+/g,' ');
-function xDedupe(k,a){const seen=new Set(),out=[];let d=0;a.forEach(o=>{const keys=[XD[k](o)];if(k==='bs_inc')keys.push(xNm(o));if(keys.some(x=>seen.has(x))){d++;return}keys.forEach(x=>seen.add(x));out.push(o)});return{out,d}}
+bs_h:o=>o.d+'|'+o.v+'|'+o.r,bs_m:o=>[o.p,o.i.trim().toLowerCase(),o.v,o.r].join('|'),
+bs_rev:o=>o.ts+'|'+o.text};
+function xDedupe(k,a){const seen=new Set(),out=[];let d=0;a.forEach(o=>{const keys=[XD[k](o)];if(keys.some(x=>seen.has(x))){d++;return}keys.forEach(x=>seen.add(x));out.push(o)});return{out,d}}
 const xHash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(16).padStart(8,'0')};
 const xKB=n=>n<1024?n+' B':(n/1024).toFixed(1)+' KB';
 const xLs=k=>{try{return localStorage.getItem(k)||''}catch(e){return''}};
@@ -31,7 +28,7 @@ const xdb=()=>new Promise((ok,no)=>{try{const q=indexedDB.open('kartika',1);q.on
 const xGet=k=>xdb().then(db=>new Promise((ok,no)=>{const r=db.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})).catch(()=>undefined);
 const xPut=(k,v)=>xdb().then(db=>new Promise((ok,no)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>ok(true);t.onerror=()=>no(t.error)})).catch(()=>false);
 let xLast='',xIgn=false,xHasAuto=false;
-async function xAuto(force){const d=XMEM(),n=xCount(d);if(n===0&&xHasAuto&&!xIgn)return; // jangan menimpa salinan dengan keadaan kosong tanpa persetujuan
+async function xAuto(force){if(window.KDEMO||xLs('bs_demo_bk'))return;const d=XMEM(),n=xCount(d);if(n===0&&xHasAuto&&!xIgn)return; // jangan menimpa salinan dengan keadaan kosong tanpa persetujuan
 const j=JSON.stringify(d);if(j===xLast&&!force)return;if(await xPut('auto',{ts:Date.now(),data:d})){xLast=j;xHasAuto=true}}
 function xApply(data,mode){return xPut('undo',{ts:Date.now(),data:XMEM()}).then(()=>{XK.forEach(([k])=>{let v=data[k]||[];if(mode==='gabung')v=xDedupe(k,(XMEM()[k]).concat(v)).out;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}});return xAuto(true)}).then(()=>{xMsg('Selesai. Memuat ulang aplikasi…');setTimeout(()=>location.reload(),600)})}
 // ---- tampilan
@@ -51,7 +48,7 @@ $('#xmg').onclick=()=>xApply(r.data,'gabung');$('#xov').onclick=()=>{if(confirm(
 $('#xun').onclick=async()=>{const u=await xGet('undo');if(!u||!u.data){xMsg('Belum ada pemulihan yang bisa diurungkan.');return}if(confirm('Kembalikan data ke keadaan sebelum pemulihan terakhir ('+new Date(u.ts).toLocaleString('id-ID')+')?'))xApply(u.data,'timpa')};
 $('#xdd').onclick=()=>{const cur=XMEM(),res=XK.map(([k,nm])=>({k,nm,...xDedupe(k,cur[k])})),tot=res.reduce((a,r)=>a+r.d,0);
 if(!tot){xMsg('Tidak ada duplikat ditemukan.');return}
-xMsg(`<b>${tot} duplikat ditemukan</b><ul style="margin:6px 0 0 18px">${res.filter(r=>r.d).map(r=>`<li>${r.nm}: ${r.d}</li>`).join('')}</ul><div class=row><button class=btn id=xcl>Hapus duplikat</button></div><p class=note>Duplikat = record identik (insiden juga dihitung bila namanya sama). Yang pertama dipertahankan.</p>`);
+xMsg(`<b>${tot} duplikat ditemukan</b><ul style="margin:6px 0 0 18px">${res.filter(r=>r.d).map(r=>`<li>${r.nm}: ${r.d}</li>`).join('')}</ul><div class=row><button class=btn id=xcl>Hapus duplikat</button></div><p class=note>Duplikat = record identik. Yang pertama dipertahankan.</p>`);
 $('#xcl').onclick=()=>xPut('undo',{ts:Date.now(),data:cur}).then(()=>{res.forEach(r=>{try{localStorage.setItem(r.k,JSON.stringify(r.out))}catch(e){}});return xAuto(true)}).then(()=>{xMsg('Duplikat dihapus. Memuat ulang…');setTimeout(()=>location.reload(),600)})};
 $('#xps').onclick=async()=>{let ok=false;try{ok=await navigator.storage.persist()}catch(e){}xStatus();xMsg(ok?'Penyimpanan permanen aktif.':'Peramban menolak. Biasanya diberikan otomatis setelah situs sering dipakai atau dipasang sebagai aplikasi. Cadangan berkas tetap pengaman utama.')};
 $('#xwp').onclick=()=>{if(!confirm('Hapus SEMUA data aplikasi di peramban ini? Unduh cadangan dulu bila perlu.'))return;if(!confirm('Yakin? Ini tidak bisa dibatalkan kecuali ada cadangan.'))return;xPut('undo',{ts:Date.now(),data:XMEM()}).then(()=>{xIgn=true;XK.forEach(([k])=>{try{localStorage.removeItem(k)}catch(e){}});return xPut('auto',{ts:Date.now(),data:{}})}).then(()=>{xMsg('Data dihapus. Memuat ulang…');setTimeout(()=>location.reload(),600)})};

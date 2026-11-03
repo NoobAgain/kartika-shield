@@ -84,3 +84,18 @@ body:has(#ks){overflow:hidden}
 .kbt{align-items:flex-start}.ks .kbr .kwm{width:auto;max-width:none;flex:0 0 auto;align-self:flex-start;object-fit:contain}.ks .kbr .klg{flex:0 0 auto}
 .ks .kbr .kwm{height:54px}.kat{top:132px!important}@media(max-width:760px){.ks .kbr .kwm{height:34px}.kat{top:104px!important}}
 @media(max-width:1700px) and (min-width:761px){.ks .kdock{left:auto!important;right:332px!important;transform:none!important}.ks.nc .kdock{right:12px!important;left:auto!important}.ks .kbr .kwm{height:44px}}
+
+/* tab inti vs pendukung: pendukung lebih kecil, redup, dipisah garis */
+.ks .kdock button.sec{opacity:.7;font-size:.7rem;padding:8px 11px}.ks .kdock button.sec:hover,.ks .kdock button.sec.on{opacity:1}.ks .kdock button.sec:first-of-type,.ks .kdock button:not(.sec)+button.sec{margin-left:6px;box-shadow:-7px 0 0 -6px rgba(160,190,255,.45)}
+
+/* demo terpandu dan layar pembuka */
+#kintro{position:fixed;inset:0;z-index:100001;display:flex;align-items:center;justify-content:center;background:rgba(4,8,20,.72);backdrop-filter:blur(6px);padding:16px}
+#kintro .ic{max-width:760px;width:100%;background:#0c1630;color:#e7eeff;border:1px solid rgba(140,180,255,.35);border-radius:14px;padding:26px 28px;box-shadow:0 20px 60px #000a}
+#kintro h2{margin:0 0 4px;font-size:1.5rem;letter-spacing:1px;color:#fff}#kintro .is{margin:0 0 16px;color:#9fd8ff}
+#kintro .ig{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}#kintro .ig div{background:rgba(255,255,255,.05);border-radius:10px;padding:12px;font-size:.84rem;line-height:1.45}#kintro .ig b{display:block;color:#5fd3c8;margin-bottom:4px;letter-spacing:.5px}
+#kintro .ir{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}#kintro .in{margin:10px 0 0;font-size:.74rem;opacity:.65}
+.dm{position:fixed;left:16px;bottom:24px;z-index:100000;width:min(400px,calc(100vw - 20px));background:#0c1630;color:#e7eeff;border:1px solid #5fd3c8;border-radius:12px;padding:14px 16px;box-shadow:0 14px 50px #000b;font-size:.88rem}
+.dm .dh{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}.dm .dtag{font-size:.62rem;letter-spacing:1.2px;border:1px solid #ff4d5e;color:#ff8a96;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.dm .db{line-height:1.5;min-height:3em}.dm .dbar{height:3px;background:rgba(255,255,255,.12);border-radius:2px;margin:10px 0}.dm .dbar i{display:block;height:100%;width:0;background:#5fd3c8}
+.dm .dr{display:flex;gap:8px;flex-wrap:wrap}.dm .dr .btn{padding:7px 12px;font-size:.78rem}
+@media(max-width:760px){#kintro .ig{grid-template-columns:1fr}.dm{bottom:8px;left:10px}}
