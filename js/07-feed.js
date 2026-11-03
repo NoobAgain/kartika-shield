@@ -6,34 +6,35 @@ function kReal(t,r){if(r.risk<40)return;kEmit(r.sara?0:3,kCity(t)||TG[0],r.risk,
 function kBuzz(r){r.cls.forEach(c=>{const pv=c.ix.map(k=>r.rows[k].pv).filter(Boolean),p=pv.sort((a,b)=>pv.filter(v=>v===a).length-pv.filter(v=>v===b).length).pop();kEmit(1,TG.find(x=>x[0]===p)||TG[0],Math.min(100,r.idx+20),r.rows[c.ix[0]].tx,'Deteksi Buzzer ('+c.us.size+' akun)')})}
 let fws=null,fc=[0,0,0];const fSt=m=>{$('#fst').textContent=m};
 $('#fgo').onclick=()=>{if(fws){fws.close();return}
-try{fws=new WebSocket('wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post')}catch(e){fws=null;fSt('Koneksi tidak diizinkan di halaman ini. Gunakan versi file mandiri.');return}
+try{fws=new WebSocket('wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post')}catch(e){fws=null;fSt('Koneksi tidak diizinkan pada halaman ini. Buka aplikasi dari berkas lokal.');return}
 fSt('Menyambung...');$('#fgo').textContent='Putuskan';fws.onopen=()=>fSt('Tersambung. Menunggu unggahan berbahasa Indonesia...');
-fws.onerror=()=>fSt('Gagal tersambung. Kemungkinan diblokir halaman ini; coba versi file mandiri.');fws.onclose=()=>{fws=null;$('#fgo').textContent='Sambungkan'};
+fws.onerror=()=>fSt('Gagal tersambung. Buka aplikasi dari berkas lokal lalu coba lagi.');fws.onclose=()=>{fws=null;$('#fgo').textContent='Sambungkan'};
 fws.onmessage=e=>{fc[0]++;if(fc[0]%20===0)$('#fn1').textContent=fc[0];const d=e.data;if(d.indexOf('"id"')<0)return;let j;try{j=JSON.parse(d)}catch(x){return}const r=j.commit&&j.commit.record;if(!r||j.commit.operation!=='create'||!r.text||!(r.langs||[]).includes('id'))return;fc[1]++;$('#fn2').textContent=fc[1];
 const h=heur(r.text);if(h.risk<45)return;fc[2]++;$('#fn3').textContent=fc[2];const g=kCity(r.text);kEmit(h.sara?0:3,g,h.risk,r.text,'Bluesky');
 fAdd({risk:h.risk,src:'Bluesky (langsung)',text:r.text},g)}};
-let fes=null;
+let fes=null,fViral=0;
 let fAll=[],fRev=[];try{fRev=JSON.parse(localStorage.getItem('bs_rev')||'[]')}catch(e){}
 const svRev=()=>{try{localStorage.setItem('bs_rev',JSON.stringify(fRev))}catch(e){}};
 const csvc=v=>{v=String(v==null?'':v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
 const csvOf=(hd,rows)=>'﻿'+[hd.join(',')].concat(rows.map(r=>r.map(csvc).join(','))).join('\r\n');
 const dlFile=(name,blob)=>{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)};
 const stamp=()=>new Date().toISOString().slice(0,16).replace(/[-:T]/g,'');
-function fSum(){const n=fRev.length,ok=fRev.filter(x=>x.v).length;$('#frs').innerHTML=n?`Ditinjau <b>${n}</b> · tepat <b>${ok}</b> · salah tandai <b>${n-ok}</b> · presisi <b>${Math.round(ok/n*100)}%</b>${n<30?' <span class=note>(sampel belum cukup, targetkan minimal 30)</span>':''}`:'Belum ada yang ditinjau. Tandai hasil di bawah untuk mengukur presisi penilaian pada data nyata.'}
-function fAdd(h,g){const ts=new Date().toISOString();fAll.unshift({ts,src:h.src,risk:h.risk,co:h.coordinated||0,city:g?g[1]:'',acct:h.acct||'',text:h.text.slice(0,280)});if(fAll.length>1000)fAll.pop();
+function fSum(){const n=fRev.length,ok=fRev.filter(x=>x.v).length;$('#frs').innerHTML=n?`Ditinjau <b>${n}</b> · tepat <b>${ok}</b> · salah tandai <b>${n-ok}</b> · presisi <b>${Math.round(ok/n*100)}%</b>${n<30?' <span class=note>(sampel belum cukup, targetkan minimal 30)</span>':''}`:'Belum ada tinjauan. Tandai hasil di bawah untuk mengukur presisi penilaian.'}
+function fAdd(h,g){const ts=new Date().toISOString(),ar=typeof arahNarasi==='function'?arahNarasi(h.text):null,ds=typeof disarmText==='function'?disarmText(h.text):[];
+fAll.unshift({ts,src:h.src,risk:h.risk,co:h.coordinated||0,city:g?g[1]:'',acct:h.acct||'',text:h.text.slice(0,280),viral:h.viral?h.viral.n:0,sources:h.viral?h.viral.sources.join('; '):'',arah:ar?ar.arah:'',sasaran:ar?ar.sasaran.join(', '):'',isu:ar?ar.isu:'',disarm:ds.map(x=>x.id).join(' ')});if(fAll.length>1000)fAll.pop();
 const L=$('#flist'),d=document.createElement('div');d.className='bti';d.style.marginBottom='6px';
-d.innerHTML=`<b>${h.risk}</b> · ${esc(h.src)}${h.coordinated?' · '+h.coordinated+' akun, teks serupa':''}${g?' · '+esc(g[1]):''}<br>${esc(h.text.slice(0,160))}${h.meta?`<br><span class=note>sampel akun: ${h.meta.newAccounts}/${h.meta.sampled} berusia kurang dari 30 hari, median ${h.meta.medianAgeDays} hari</span>`:''}<div class=row style=margin-top:6px><button class='btn alt' data-v=1>Tepat</button><button class='btn alt' data-v=0>Salah tandai</button></div>`;
-d.querySelectorAll('button').forEach(b=>b.onclick=()=>{const v=+b.dataset.v;fRev.push({ts,src:h.src,risk:h.risk,v,text:h.text.slice(0,200)});svRev();fSum();d.querySelector('.row').innerHTML='<span class=note>Tercatat: '+(v?'tepat':'salah tandai')+'</span>'});
+d.innerHTML=`${h.viral?`<span class=chip style="border-color:#ff4d5e;color:#ff8a94">VIRAL · ${h.viral.n} sumber · ${h.viral.windowMin} menit</span><br>`:''}<b>${h.risk}</b> · ${esc(h.src)}${h.coordinated?' · '+h.coordinated+' akun, teks serupa':''}${g?' · '+esc(g[1]):''}<br>${esc(h.text.slice(0,160))}${h.meta?`<br><span class=note>sampel akun: ${h.meta.newAccounts}/${h.meta.sampled} berusia kurang dari 30 hari, median ${h.meta.medianAgeDays} hari</span>`:''}${h.viral&&h.viral.sources.length?`<br><span class=note>Sumber: ${h.viral.sources.map(esc).join(', ')}</span>`:''}${ar?`<br><span class=note>Arah: ${esc(ar.arah)} · Sasaran: ${esc(ar.sasaran.join(', ')||'tidak jelas')} · Isu: ${esc(ar.isu||'-')}</span>`:''}${ds.length?`<div style="margin-top:4px">${ds.map(x=>`<span class=chip title="${esc(x.why)}">${esc(x.id)} ${esc(x.short)}</span>`).join('')}</div>`:''}<div class=row style=margin-top:6px><button class='btn alt' data-v=1>Tepat</button><button class='btn alt' data-v=0>Salah tandai</button></div>`;
+d.querySelectorAll('button[data-v]').forEach(b=>b.onclick=()=>{const v=+b.dataset.v;fRev.push({ts,src:h.src,risk:h.risk,v,text:h.text.slice(0,200)});svRev();fSum();d.querySelector('.row').innerHTML='<span class=note>Tercatat: '+(v?'tepat':'salah tandai')+'</span>'});
 L.prepend(d);while(L.children.length>8)L.lastChild.remove()}
 $('#fkc').onclick=()=>{if(fes){fes.close();fes=null;$('#fkc').textContent='Hubungkan kolektor';fSt('Kolektor diputus.');return}
 if(ksim)$('#ksm').click();const u=($('#fk').value.trim()||'http://localhost:8787').replace(/\/$/,'');
 try{fes=new EventSource(u+'/events')}catch(e){fes=null;fSt('Koneksi tidak diizinkan di halaman ini. Buka versi berkas mandiri dari komputer Anda.');return}
 fSt('Menyambung ke kolektor...');$('#fkc').textContent='Putuskan';
 fes.onopen=()=>fSt('Kolektor tersambung: '+u);
-fes.onerror=()=>fSt('Kolektor tidak terjangkau. Pastikan server berjalan dan halaman dibuka dari berkas lokal (bukan tautan terbit).');
-fes.addEventListener('stat',e=>{const s=JSON.parse(e.data);$('#fn1').textContent=s.seen;$('#fn2').textContent=s.id;$('#fn3').textContent=s.flagged});
-fes.addEventListener('hit',e=>{const h=JSON.parse(e.data),g=h.city?TG.find(x=>x[0]===h.city):null;kEmit(h.type,g,h.risk,h.text,h.src);fAdd(h,g)})};
+fes.onerror=()=>fSt('Kolektor tidak terjangkau. Pastikan server berjalan dan aplikasi dibuka dari berkas lokal.');
+fes.addEventListener('stat',e=>{const s=JSON.parse(e.data);$('#fn1').textContent=s.seen;$('#fn2').textContent=s.id;$('#fn3').textContent=s.flagged;if(s.viral!=null){fViral=s.viral;$('#fn4').textContent=fViral}});
+fes.addEventListener('hit',e=>{const h=JSON.parse(e.data),g=h.city?TG.find(x=>x[0]===h.city):null;if(h.viral){fViral++;$('#fn4').textContent=fViral}kEmit(h.type,g,h.risk,h.text,h.src);fAdd(h,g)})};
 fSum();
-$('#fcsv').onclick=()=>{if(!fAll.length){fSt('Belum ada hasil untuk diunduh.');return}dlFile('hasil-feed-'+stamp()+'.csv',new Blob([csvOf(['waktu','sumber','risiko','akun_serentak','wilayah','akun_hash','teks'],fAll.map(r=>[r.ts,r.src,r.risk,r.co,r.city,r.acct,r.text]))],{type:'text/csv;charset=utf-8'}))};
+$('#fcsv').onclick=()=>{if(!fAll.length){fSt('Belum ada hasil untuk diunduh.');return}dlFile('hasil-feed-'+stamp()+'.csv',new Blob([csvOf(['waktu','sumber','risiko','akun_serentak','wilayah','akun_hash','teks','viral_sumber','viral_penerbit','arah_narasi','sasaran_narasi','isu','disarm'],fAll.map(r=>[r.ts,r.src,r.risk,r.co,r.city,r.acct,r.text,r.viral,r.sources,r.arah,r.sasaran,r.isu,r.disarm]))],{type:'text/csv;charset=utf-8'}))};
 $('#frcsv').onclick=()=>{if(!fRev.length){fSt('Belum ada tinjauan.');return}dlFile('tinjauan-'+stamp()+'.csv',new Blob([csvOf(['waktu','sumber','risiko','penilaian','teks'],fRev.map(r=>[r.ts,r.src,r.risk,r.v?'tepat':'salah_tandai',r.text]))],{type:'text/csv;charset=utf-8'}))};
 $('#frclr').onclick=()=>{if(fRev.length&&!confirm('Hapus semua tinjauan di peramban ini?'))return;fRev=[];svRev();fSum()};

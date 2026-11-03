@@ -19,6 +19,11 @@ html = html.replace(/src='(assets\/[^']+)'/g, (_, f) => {
   const b = fs.readFileSync(path.join(root, f));
   return "src='data:" + (mime[path.extname(f)] || 'application/octet-stream') + ';base64,' + b.toString('base64') + "'";
 });
+// Favicon lokal
+html = html.replace(/<link rel="icon" href="((?!https?:|data:)[^"]+)">/g, (_, f) => {
+  const b = fs.readFileSync(path.join(root, f));
+  return '<link rel="icon" href="data:' + (mime[path.extname(f)] || 'application/octet-stream') + ';base64,' + b.toString('base64') + '">';
+});
 
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 const out = path.join(root, 'dist', 'kartika-shield.html');

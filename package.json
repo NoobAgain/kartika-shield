@@ -7,10 +7,7 @@
     "build": "node tools/build.js",
     "collector": "node collector/server.js",
     "buzzer": "node collector/ambil-buzzer.js",
-    "youtube": "node collector/ambil-youtube.js",
-    "caraka": "node collector/caraka.js"
+    "youtube": "node collector/ambil-youtube.js"
   },
-  "engines": {
-    "node": ">=22"
-  }
+  "engines": { "node": ">=22" }
 }

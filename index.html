@@ -2,76 +2,81 @@
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kartika Shield – Disinformation Threat Exchange</title>
+<link rel="icon" href="assets/logo-shield.png">
 <link rel="stylesheet" href="assets/style.css">
 </head><body>
 
 <header><h1>Kartika <span>Shield</span></h1>
-<p class="sub">Anti Disinformation Warfare · Kategori Cognitive Domain · Tameng informasi berbasis nilai Bhinneka Tunggal Ika</p></header>
+<p class="sub">Platform analisis, pemetaan, dan pelaporan disinformasi.</p></header>
 <nav id="tabs"><button data-t="a" class="on">Analisis Konten</button><button data-t="b">Deteksi Buzzer</button><button data-t="m">Peta Peringatan Dini</button><button data-t="k">Peta Dunia Live</button><button data-t="d">Dashboard</button></nav>
 <main>
 <section id="a">
 <div class="card"><h2>Periksa konten mencurigakan</h2>
 <textarea id="inp" placeholder="Tempel teks berita, pesan berantai, atau narasi viral di sini…"></textarea>
-<div class="row"><button class="btn" id="go">Analisis</button><button class="btn alt" id="ex">Contoh konten</button><button class="btn alt" id="clr">Bersihkan</button></div>
+<div class="row"><button class="btn" id="go">Analisis</button><button class="btn alt" id="ex">Isi contoh</button><button class="btn alt" id="clr">Bersihkan</button></div>
 <p class="note">Alat ini menilai pola bahasa, teknik manipulasi, dan risiko SARA. Ini bukan pengganti cek fakta resmi: selalu verifikasi ke sumber primer (tabayyun).</p></div>
 <div id="res"></div></section>
 
 
 <section id="b" class="hidden"><div class="card"><h2>Deteksi Bot &amp; Buzzer Terkoordinasi</h2>
-<p class="note">Tempel data unggahan, satu baris per unggahan: <code>akun,umur_akun_hari,follower,following,jam(HH:MM),teks|KODE</code> (kode provinsi opsional, mis. <code>|JK</code>, agar bisa dikirim ke peta). Data bisa diambil otomatis dari Bluesky, YouTube, atau Facebook (Halaman Anda) dengan <code>collector/ambil-buzzer.js</code>, <code>ambil-youtube.js</code>, atau <code>ambil-facebook.js</code> (lihat README). Analisis berjalan lokal di peramban: kemiripan teks, lonjakan waktu, dan profil akun.</p>
+<p class="note">Tempel data unggahan, satu baris per unggahan: <code>akun,umur_akun_hari,follower,following,jam(HH:MM),teks|KODE</code>. Kode provinsi opsional (mis. <code>|JK</code>) untuk mengirim hasil ke peta. Analisis berjalan lokal di peramban.</p>
 <textarea id="bin" style="min-height:160px" placeholder="buzz_88412,6,12,950,19:02,Teks unggahan…"></textarea>
-<input type="file" id="bfile" accept=".csv,.txt" style="margin-top:8px"><div class="row"><button class="btn" id="bgo">Deteksi</button><button class="btn alt" id="bcar">Ambil dari Caraka</button><button class="btn alt" id="bex">Muat data contoh</button><button class="btn alt" id="bev">Uji akurasi</button><button class="btn alt" id="bpm">Kirim ke Peta Dini</button></div></div><div id="bq"></div><div id="bres"></div><div id="bev2"></div></section>
+<input type="file" id="bfile" accept=".csv,.txt" style="margin-top:8px"><div class="row"><button class="btn" id="bgo">Deteksi</button><button class="btn alt" id="bex">Gunakan contoh</button><button class="btn alt" id="bev">Validasi model</button><button class="btn alt" id="bpm">Kirim ke Peta Dini</button></div></div><div id="bq"></div><div id="bres"></div><div id="bev2"></div></section>
 <section id='k'><div class='ks' id='ks'><canvas id='kc'></canvas>
-<div class='kbr'><img class='klg' alt='Logo Kartika Shield' src='assets/logo-shield.png'><div class='kbt'><img class='kwm' alt='KARTIKA SHIELD' src='assets/logo-wordmark.png'><span>Disinformation Threat Exchange</span><div class='kbm'><span class='kbg' id='kbg'>DATA NYATA</span><small>Kartika Cyber Hackathon 2026</small></div></div></div>
+<div class='kbr'><img class='klg' alt='Logo Kartika Shield' src='assets/logo-shield.png'><div class='kbt'><img class='kwm' alt='KARTIKA SHIELD' src='assets/logo-wordmark.png'><span>Disinformation Threat Exchange</span><div class='kbm'><span class='kbg' id='kbg'>DATA LANGSUNG</span><small>Pusat Pemantauan Disinformasi</small></div></div></div>
 <div class='kat'><h4>TIPE ANCAMAN</h4><div class='kl' id='kl'></div></div>
-<div class='kb'><button id='kgl'>Globe</button><button id='kz1'>+</button><button id='kz0'>−</button><button id='kb_demo'>Demo</button><button id='ksm'>Mode: Nyata</button><button id='kbd'>Jeda</button><button id='kcol'>Panel</button></div>
+<div class='kb'><button id='kgl'>Globe</button><button id='kz1'>+</button><button id='kz0'>−</button><button id='ksm'>Mode: Langsung</button><button id='kbd'>Jeda</button><button id='kcol'>Panel</button></div>
 <div class='ktl' id='ktl'><canvas id='ktc'></canvas></div>
-<aside class='ksb' id='ksb'><h3>LIVE DISINFORMATION MAP</h3><small id='ksub'>STATISTIK SESI NYATA</small>
-<div class='kcn'><small id='kcl'>SINYAL NYATA SESI INI</small><b id='kn'>0</b></div>
+<aside class='ksb' id='ksb'><h3>PETA DISINFORMASI</h3><small>STATISTIK SESI</small>
+<div class='kcn'><small id='kcl'>SINYAL LANGSUNG SESI INI</small><b id='kn'>0</b></div>
 <h4 id='kh1'>TOP SUMBER DATA</h4><div id='kb1'></div><h4>TOP WILAYAH DISERANG</h4><div id='kb2'></div><h4>TOP JENIS ANCAMAN</h4><div id='kb3'></div><h4>TOP NARASI</h4><div id='kb4'></div>
 <button id='ksy'>Sinkronkan ke Peta Peringatan Dini</button><button id='kpng' style='margin-top:8px;width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(160,190,255,.3);border-radius:6px;padding:9px;font-size:.78rem'>Unduh gambar peta (PNG)</button><pre id='klog'></pre></aside></div>
-<p class='note' style='margin-top:10px'><span id='kmn'>Mode data nyata: hanya peristiwa dari kolektor, Feed Bluesky, impor CSV, dan analisis Anda yang tampil di peta.</span> Seret peta untuk memutar, gulir untuk zoom. Versi produksi menerima feed nyata (WebSocket/SSE).</p></section>
-<section id="f" class="hidden"><div class="card"><h2>Feed Sosial Live (Bluesky)</h2>
-<p class="note">Menyambung ke aliran publik Bluesky (Jetstream), menyaring unggahan berbahasa Indonesia, lalu menilainya. Bluesky tidak menyediakan lokasi, jadi peta hanya menerima unggahan yang menyebut nama kota. Teks unggahan hanya berada di memori. Teks yang Anda tinjau (dipotong 200 karakter) tersimpan di peramban ini saja.</p>
-<input id="fk" placeholder="Alamat kolektor, mis. http://localhost:8787" style="margin-bottom:8px"><div class="row" style="margin-top:0"><button class="btn" id="fkc">Hubungkan kolektor</button><button class="btn alt" id="fgo">Sambungkan</button></div>
-<div class="grid" style="margin-top:10px"><div class="stat"><b id="fn1">0</b>Unggahan dilihat</div><div class="stat"><b id="fn2">0</b>Berbahasa Indonesia</div><div class="stat"><b id="fn3">0</b>Berisiko</div></div>
+<p class='note' style='margin-top:10px'><span id='kmn'>Peta menampilkan peristiwa dari kolektor, Feed Bluesky, impor CSV, dan analisis konten.</span> Seret untuk memutar, gulir untuk memperbesar.</p></section>
+<section id="f" class="hidden"><div class="card"><h2>Feed Sosial &amp; Berita Live</h2>
+<p class="note">Aliran langsung Bluesky (Jetstream) dan agregasi RSS/Google News melalui kolektor. Berita berjudul mirip dari beberapa penerbit dalam 3 jam ditandai sebagai sinyal menyebar. Lokasi hanya dipetakan jika teks menyebut nama kota; teks tinjauan disimpan di peramban ini.</p>
+<input id="fk" placeholder="Alamat kolektor, mis. http://localhost:8787" style="margin-bottom:8px"><div class="row" style="margin-top:0"><button class="btn" id="fkc">Hubungkan kolektor</button><button class="btn alt" id="fgo">Sambungkan Bluesky</button></div>
+<div class="grid" style="margin-top:10px"><div class="stat"><b id="fn1">0</b>Unggahan/berita dilihat</div><div class="stat"><b id="fn2">0</b>Berbahasa Indonesia</div><div class="stat"><b id="fn3">0</b>Berisiko</div><div class="stat"><b id="fn4">0</b>Berita/viral</div></div>
 <p class="note" id="fst">Belum tersambung.</p>
 <div class="bti" id="frs" style="margin:8px 0"></div><div class="row" style="margin-top:0"><button class="btn alt" id="fcsv">Unduh hasil feed (CSV)</button><button class="btn alt" id="frcsv">Unduh tinjauan (CSV)</button><button class="btn alt" id="frclr">Hapus tinjauan</button></div><div id="flist"></div></div></section>
 <section id="m" class="hidden"><div class="card"><h2>Peta Peringatan Dini Isu Viral per Wilayah</h2>
 <p class="note">Setiap lambang berada di ibu kota provinsinya (peta batas 38 provinsi, garis penunjuk dipakai bila lambang berdempetan). Batas wilayah: indonesia-geojson-topojson-maps-with-38-provinces (CC BY 4.0), disederhanakan. Warna menunjukkan tingkat peringatan dari volume dan risiko isu yang dilaporkan.</p>
 <div class="fm"><select id="mpv" style="padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)"></select><input id="mis" placeholder="Isu atau narasi"><input id="mvl" type="number" min="1" placeholder="Volume unggahan"><input id="mrk" type="number" min="0" max="100" value="50" placeholder="Risiko 0-100"></div>
 <label class="note"><input id="msr" type="checkbox" style="width:auto"> Mengandung muatan SARA</label>
-<div class="row"><button class="btn" id="madd">Tambah ke peta</button><button class="btn alt" id="mlast">Pakai skor analisis terakhir</button><button class="btn alt" id="mex">Muat data contoh</button><button class="btn alt" id="mrs">Reset</button></div></div>
+<div class="row"><button class="btn" id="madd">Tambah ke peta</button><button class="btn alt" id="mlast">Pakai skor analisis terakhir</button><button class="btn alt" id="mex">Gunakan contoh</button><button class="btn alt" id="mrs">Reset</button></div></div>
 <div class="card"><div id="msum"></div><div class="mp" id="mmap" style="margin-top:12px"></div>
 <p class="note lg"><span style="background:#15803d"></span>Aman<span style="background:#a16207"></span>Waspada<span style="background:#c2410c"></span>Siaga<span style="background:#b3202a"></span>Awas<span style="background:var(--sf);border:1px solid var(--bd)"></span>Tanpa data</p>
 <div class="row"><button class="btn alt" id="mpng">Unduh PNG</button><button class="btn alt" id="mpdf">Cetak / PDF</button></div><div id="mdet"></div></div><div class="card" id="mx"></div></section>
-<section id="d" class="hidden"><div class="card"><h2>Dashboard sesi (peringatan dini)</h2><div id="dash"></div>
+<section id="d" class="hidden"><div class="card"><h2>Dashboard Peringatan Dini</h2><div id="dash"></div>
 <div class="row"><button class="btn alt" id="rst">Reset data</button></div>
 <p class="note">Data hanya tersimpan di peramban Anda dan tidak dibagikan.</p></div></section>
 
+<section id="r" class="hidden"><div class="card"><h2>Laporan Komando</h2>
+<p class="note">Ringkasan situasi, aktor, arah narasi, pemetaan DISARM, prioritas wilayah, dan tindak lanjut. Laporan disusun dari data sesi ini; verifikasi sebelum digunakan sebagai dasar tindakan.</p>
+<div class="fm"><input id="rjudul" value="Laporan Situasi Disinformasi" placeholder="Judul laporan"><input id="rpic" placeholder="PIC / unit"><input id="rdeadline" type="date" title="Tenggat tindak lanjut"><select id="rstatus" style="padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)"><option>Baru</option><option>Proses</option><option>Selesai</option></select></div>
+<textarea id="rcat" style="min-height:80px;margin-top:8px" placeholder="Arahan komandan / catatan tindak lanjut…"></textarea>
+<div class="row"><button class="btn" id="rgen">Susun laporan</button><button class="btn alt" id="rsave">Simpan tindak lanjut</button><button class="btn alt" id="rprint">Cetak / PDF</button><button class="btn alt" id="rjson">Unduh JSON</button><button class="btn alt" id="rcsv">Unduh CSV</button><button class="btn alt" id="rcopy">Salin ringkasan</button></div>
+<div id="rprev" class="note" style="margin-top:8px"></div></div>
+<div id="rout"></div>
+<div class="card"><h3>Riwayat tindak lanjut</h3><div id="rhist"></div></div></section>
+
 <section id="x" class="hidden"><div class="card"><h2>Pusat Data</h2>
-<p class="note">Semua data aplikasi (riwayat analisis, laporan peta, tinjauan feed) tersimpan di peramban ini. Unduh cadangan secara berkala: itu satu-satunya salinan yang tidak hilang saat data peramban dibersihkan.</p>
+<p class="note">Data aplikasi tersimpan di peramban ini. Unduh cadangan berkas secara berkala untuk menghindari kehilangan data saat penyimpanan peramban dibersihkan.</p>
 <div id="xst"></div>
 <div class="row"><button class="btn" id="xbk">Unduh cadangan (JSON)</button><label class="btn alt" style="cursor:pointer">Pulihkan dari berkas<input type="file" id="xfile" accept=".json,application/json" style="display:none"></label><button class="btn alt" id="xdd">Cek duplikat</button><button class="btn alt" id="xun">Urungkan pemulihan</button><button class="btn alt" id="xps">Minta penyimpanan permanen</button><button class="btn alt" id="xwp">Hapus semua data</button></div>
-<div id="xprev"></div></div>
-<div class="card"><h2>Uji akurasi penilai konten</h2>
-<p class="note">Unggah CSV berlabel dengan kolom <code>teks,label</code> (label: <code>hoaks</code> atau <code>valid</code>, boleh 1 dan 0). Penilai dijalankan pada tiap baris lalu dihitung presisi, recall, F1, dan AUC. Penilai gabungan: aturan pola manipulasi ditambah model ringan terlatih (IDNHoaxCorpus).</p>
-<input type="file" id="xaf" accept=".csv,.txt"><div id="xar"></div></div>
-</section>
+<div id="xprev"></div></div></section>
 </main>
-<script src="vendor/d3.min.js"></script>
-<script src="vendor/topojson-client.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <script src="data/world.js"></script>
 <script src="data/provinces.js"></script>
 <script src="data/logos.js"></script>
-<script src="data/model.js"></script>
 <script src="js/01-inti.js"></script>
 <script src="js/02-analisis.js"></script>
 <script src="js/03-buzzer.js"></script>
 <script src="js/04-peta-dini.js"></script>
 <script src="js/05-peta-live.js"></script>
+<script src="js/06-disarm.js"></script>
 <script src="js/07-feed.js"></script>
+<script src="js/08-laporan.js"></script>
 <script src="js/10-data.js"></script>
-<script src="js/11-demo.js"></script>
-<script src="js/12-akurasi.js"></script>
 </body></html>

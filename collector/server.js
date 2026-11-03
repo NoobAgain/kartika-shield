@@ -8,13 +8,22 @@ const MAX_CLIENTS = +process.env.MAX_CLIENTS || 20;
 const ALLOW = (process.env.ALLOW_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
 const okOrigin = o => o === 'null' || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o || '') || ALLOW.includes(o);  // 'null' = berkas HTML lokal
 const JETSTREAM = process.env.JETSTREAM || 'wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post';
-const RSS_URLS = (process.env.RSS_URLS || '').split(',').map(s => s.trim()).filter(Boolean); // opsional, pisahkan dengan koma
+const DEFAULT_RSS = [
+  'https://news.google.com/rss/search?q=indonesia&hl=id&gl=ID&ceid=ID:id',
+  'https://www.antaranews.com/rss/terkini.xml',
+  'https://www.cnnindonesia.com/rss',
+  'https://rss.detik.com/index.php/detikcom',
+  'https://kumparan.com/rss',
+  'https://www.tempo.co/rss/terkini'
+];
+const RSS_RAW = process.env.RSS_URLS == null ? null : process.env.RSS_URLS.trim();
+const RSS_URLS = RSS_RAW == null ? DEFAULT_RSS : (RSS_RAW.toLowerCase() === 'off' ? [] : RSS_RAW.split(',')).map(s => s.trim()).filter(Boolean);
 const MIN_RISK = +process.env.MIN_RISK || 45;       // ambang risiko untuk dilaporkan
 const WINDOW_MS = 15 * 60 * 1000;                    // jendela deteksi teks kembar
 const CITY = [[/\b(?:papua barat daya|sorong)\b/i,'PD'],[/\b(?:papua barat|manokwari)\b/i,'PB'],[/\b(?:papua tengah|nabire)\b/i,'PH'],[/\b(?:papua selatan|merauke)\b/i,'PS'],[/\b(?:papua pegunungan|wamena|jayawijaya)\b/i,'PP'],[/\b(?:jayapura|papua)\b/i,'PA'],[/\b(?:balikpapan|samarinda|kaltim)\b/i,'KI'],[/\b(?:denpasar|bali)\b/i,'BA'],[/\b(?:jakarta|dki)\b/i,'JK'],[/\b(?:bekasi|depok|bogor|bandung|jabar)\b/i,'JB'],[/\b(?:tangerang|serang|banten)\b/i,'BT'],[/\b(?:semarang|surakarta|jateng)\b/i,'JT'],[/\b(?:yogyakarta|jogja|yogya)\b/i,'YO'],[/\b(?:surabaya|malang|jatim)\b/i,'JI'],[/\b(?:medan|sumut)\b/i,'SU'],[/\b(?:banda aceh|aceh)\b/i,'AC'],[/\b(?:padang|sumbar)\b/i,'SB'],[/\b(?:pekanbaru|riau)\b/i,'RI'],[/\b(?:batam|tanjung ?pinang|kepri)\b/i,'KR'],[/\b(?:jambi)\b/i,'JA'],[/\b(?:bengkulu)\b/i,'BE'],[/\b(?:palembang|sumsel)\b/i,'SS'],[/\b(?:pangkal ?pinang|bangka|belitung|babel)\b/i,'BB'],[/\b(?:bandar lampung|lampung)\b/i,'LA'],[/\b(?:pontianak|kalbar)\b/i,'KB'],[/\b(?:banjarmasin|banjarbaru|kalsel)\b/i,'KS'],[/\b(?:palangka ?raya|kalteng)\b/i,'KT'],[/\b(?:tanjung selor|kaltara|kalimantan utara)\b/i,'KU'],[/\b(?:makassar|sulsel)\b/i,'SN'],[/\b(?:mamuju|sulbar)\b/i,'SR'],[/\b(?:manado|sulut)\b/i,'SA'],[/\b(?:kota palu|sulteng)\b/i,'ST'],[/\b(?:kendari|sultra)\b/i,'SG'],[/\b(?:gorontalo)\b/i,'GO'],[/\b(?:sofifi|ternate|malut|maluku utara)\b/i,'MU'],[/\b(?:ambon|maluku)\b/i,'MA'],[/\b(?:mataram|ntb)\b/i,'NB'],[/\b(?:kupang|ntt)\b/i,'NT']];  // urutan penting: yang lebih spesifik lebih dulu, \b mencegah 'bali' cocok dengan 'balikpapan'
 
-const stat = { seen: 0, id: 0, flagged: 0, coordinated: 0 }, clients = new Set(), backlog = [], seenRss = new Set();
-let groups = [];
+const stat = { seen: 0, id: 0, flagged: 0, coordinated: 0, news: 0, viral: 0 }, clients = new Set(), backlog = [], seenRss = new Set();
+let groups = [], newsGroups = [];
 const send = (ev, d) => { const m = `event: ${ev}\ndata: ${JSON.stringify(d)}\n\n`; clients.forEach(r => r.write(m)); };
 const city = t => { const f = CITY.find(c => c[0].test(t)); return f ? f[1] : null; };
 
@@ -86,13 +95,47 @@ function connect() {
   ws.onclose = () => { console.log('Jetstream putus, mencoba lagi 5 detik'); setTimeout(connect, 5000); };
   ws.onerror = () => {};
 }
+const dec = s => String(s || '').replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+function rssItems(x) {
+  const out = [], blocks = x.match(/<item[\s\S]*?<\/item>/gi) || x.match(/<entry[\s\S]*?<\/entry>/gi) || [];
+  for (const b of blocks) {
+    const pick = (re) => { const m = b.match(re); return m ? dec(m[1]) : ''; };
+    const title = pick(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    const link = pick(/<link[^>]*href=["']([^"']+)["']/i) || pick(/<link[^>]*>([\s\S]*?)<\/link>/i);
+    const desc = pick(/<(?:description|summary|content:encoded)[^>]*>([\s\S]*?)<\/(?:description|summary|content:encoded)>/i);
+    const src = pick(/<source[^>]*>([\s\S]*?)<\/source>/i);
+    if (title) out.push({ title, link, desc, src });
+  }
+  return out;
+}
+function newsTrack(title, desc, source) {   // judul mirip dari >= 2 penerbit berbeda dalam 3 jam = berita menyebar
+  const k = norm(title); if (k.split(' ').length < 4) return false;
+  const now = Date.now(), sh = bigrams(k);
+  let g = newsGroups.find(x => now - x.first <= 3 * 3600 * 1000 && jac(x.sh, sh) >= 0.62);
+  if (!g) { g = { first: now, sources: new Set(), n: 0, title, sh }; newsGroups.push(g); }
+  g.sources.add(source);
+  if (g.sources.size < 2 || g.sources.size <= g.n) return false;
+  g.n = g.sources.size;
+  if (g.n > 3 && g.n % 5) return true;
+  const h = heur(title + ' ' + desc);
+  stat.viral++;
+  emit({ src: 'Agregasi Berita', type: h.sara ? 0 : 3, risk: Math.max(h.risk, Math.min(85, 45 + g.n * 6)), text: title.slice(0, 280), city: city(title + ' ' + desc), sara: h.sara, viral: { n: g.n, sources: [...g.sources].slice(0, 6), windowMin: Math.round((now - g.first) / 60000) } });
+  return true;
+}
 async function pollRss(u) {
   try {
     const x = await (await fetch(u, { signal: AbortSignal.timeout(10000) })).text();
-    for (const m of [...x.matchAll(/<item[\s\S]*?<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/g)].slice(0, 15)) {
-      const t = m[1].trim(); if (!t || seenRss.has(t)) continue; seenRss.add(t); if (seenRss.size > 5000) seenRss.clear(); stat.seen++; stat.id++;
-      const h = heur(t); if (h.risk >= MIN_RISK) emit({ src: 'RSS ' + new URL(u).hostname, type: h.sara ? 0 : 3, risk: h.risk, text: t.slice(0, 280), city: city(t), sara: h.sara });
+    const host = new URL(u).hostname.replace(/^www\./, '');
+    for (const it of rssItems(x).slice(0, 20)) {
+      const t = it.title.trim(), key = (it.link || t).trim(); if (!t || seenRss.has(key)) continue;
+      seenRss.add(key); if (seenRss.size > 5000) seenRss.clear();
+      stat.seen++; stat.id++; stat.news++;
+      const src = it.src || host;
+      const h = heur(t + ' ' + it.desc);
+      if (newsTrack(t, it.desc, src)) continue;
+      if (h.risk >= MIN_RISK) emit({ src: 'RSS ' + src, type: h.sara ? 0 : 3, risk: h.risk, text: t.slice(0, 280), city: city(t + ' ' + it.desc), sara: h.sara });
     }
+    if (newsGroups.length > 2000) newsGroups = newsGroups.filter(x => Date.now() - x.first <= 3 * 3600 * 1000).slice(-2000);
   } catch (e) { console.log('RSS gagal:', u); }
 }
 

@@ -1,6 +1,6 @@
 # Kartika Shield
 
-Dasbor anti disinformasi (Cognitive Domain) berbasis nilai Bhinneka Tunggal Ika, dengan kolektor data opsional.
+Dasbor anti disinformasi (Cognitive Domain) berbasis nilai Bhinneka Tunggal Ika, dengan kolektor data opsional. Analisis mencakup indikator risiko, arah/sasaran narasi, pemetaan DISARM, klaster buzzer, peringatan dini wilayah, dan laporan komando.
 
 Penilaian adalah **indikator pola bahasa dan perilaku, bukan putusan benar atau salah**. Hanya cek fakta resmi yang dapat menyatakan sebuah klaim hoaks.
 
@@ -10,7 +10,7 @@ index.html          kerangka halaman
 assets/             gaya (style.css) dan logo
 js/                 kode aplikasi, satu berkas per fitur (dimuat berurutan, angka di awal nama menentukan urutan)
 data/               data statis (batas provinsi, lambang, peta dunia)
-collector/          Caraka (agen siaga), bot pengambil data, kolektor Bluesky/RSS (Node.js >= 22, tanpa dependensi)
+collector/          kolektor Bluesky/RSS (Node.js >= 22, tanpa dependensi)
 tools/build.js      menggabungkan semuanya menjadi satu berkas
 dist/               hasil build, kartika-shield.html (berkas tunggal mandiri)
 ```
@@ -22,14 +22,17 @@ dist/               hasil build, kartika-shield.html (berkas tunggal mandiri)
 
 Tidak ada langkah instal. Pustaka d3 dan topojson dimuat dari CDN, jadi butuh internet saat pertama kali dibuka.
 
+Tampilan utama adalah **Peta Dunia Live**. Jendela Analisis, Buzzer, Feed, Peta Dini, **Laporan Komando**, Dashboard, dan Data dibuka dari dock di bagian atas peta.
+
 ## Mengisi data
 | Cara | Tempat |
 |---|---|
 | Aliran Bluesky langsung dari peramban | Feed, tombol Sambungkan |
-| Kolektor di komputer sendiri (ada deteksi koordinasi) | Feed, Hubungkan kolektor |
+| Kolektor di komputer sendiri (Bluesky + RSS/Google News, ada deteksi koordinasi dan berita lintas penerbit) | Feed, Hubungkan kolektor |
 | Tempel teks | Analisis |
 | Impor CSV unggahan | Buzzer |
 | Isi manual per provinsi | Peta Dini |
+| Susun ringkasan tindak lanjut | Laporan Komando |
 | Data sintetis untuk demo | tombol Mode: Simulasi (diberi penanda tegas) |
 
 ## Menguji mutu penilaian dengan data nyata
@@ -45,6 +48,8 @@ cd collector
 node server.js
 ```
 Pengaturan lewat variabel lingkungan: `PORT` (8787), `HOST` (127.0.0.1), `MIN_RISK` (45), `MAX_CLIENTS` (20), `ALLOW_ORIGIN` (asal tambahan untuk CORS), `LOG_CSV`, `JETSTREAM`, `RSS_URLS`. Pengaturan bot pengambil data dijelaskan terpisah di bawah.
+
+Bila `RSS_URLS` tidak diisi, kolektor memakai daftar bawaan Google News Indonesia, Antara, CNN Indonesia, Detik, Kumparan, dan Tempo. Isi `RSS_URLS` dengan daftar URL dipisahkan koma untuk mengganti daftar itu; isi `off` (`RSS_URLS=off`) untuk mematikan RSS. Kolektor menandai judul yang mirip dari minimal dua penerbit berbeda dalam tiga jam sebagai **Agregasi Berita/viral** dan mengirimkannya ke Feed. RSS hanya diambil kolektor (bukan peramban) agar tidak terkena batas CORS.
 
 Bila dasbor dibuka dari GitHub Pages: `ALLOW_ORIGIN=https://USERNAME.github.io node server.js`, lalu isi `http://localhost:8787` di tab Feed. Kolektor tidak bisa berjalan di GitHub Pages atau Vercel karena harus tersambung terus-menerus.
 
@@ -84,10 +89,16 @@ Pencarian video memakai 100 unit per kata kunci, sedangkan mengambil komentar da
 - Peta Peringatan Dini: unduh PNG, cetak atau simpan PDF.
 - Peta Live: unduh PNG.
 - Feed: CSV hasil dan CSV tinjauan.
+- Laporan Komando: cetak/PDF, JSON, CSV, salin ringkasan; tindak lanjut tersimpan di `bs_cmd` dan ikut cadangan Pusat Data.
+
+## Arah narasi dan DISARM
+- Analisis menampilkan perkiraan **arah narasi** (menyerang, mendukung, kontradiktif, netral) dan **sasaran** (pemerintah, kelompok agama/etnis, tokoh, ekonomi, kelompok rentan, dan lain-lain). Ini pola bahasa, bukan penilaian niat.
+- Indikator dipetakan ke **DISARM Red Framework** (taktik/teknik) di `js/06-disarm.js`, misalnya tagar kampanye, clickbait, konspirasi, serbuan akun, akun baru, dan deepfake. Pemetaan berbasis aturan, bukan atribusi resmi.
+- Rujukan dan lisensi DISARM ada di `THIRD_PARTY.md`.
 
 ## Privasi dan batasan
 - Kolektor tidak menulis ke disk kecuali `LOG_CSV` diisi. Akun ditampilkan sebagai hash 8 karakter.
-- Cakupan sumber hanya Bluesky dan RSS. Platform lain tidak punya aliran publik atau berbayar.
+- Cakupan sumber hanya Bluesky dan RSS/Google News. Platform lain tidak punya aliran publik atau berbayar.
 - Skor berbasis aturan bahasa bisa salah tandai dan mudah dihindari. Selalu tinjau manual dan rujuk cek fakta (tautan tersedia di hasil Analisis).
 - Mode AI (Analisis dan Bot) hanya aktif di lingkungan yang menyediakannya. Di tempat lain dasbor memakai mode offline.
 
@@ -108,7 +119,7 @@ Menirukan login akun pribadi untuk mengambil data dari platform di atas melangga
 
 ## Pusat Data (penyimpanan dan kualitas data)
 
-Jendela **Data** di dock mengelola semua data aplikasi (riwayat analisis, laporan peta, tinjauan feed).
+Jendela **Data** di dock mengelola semua data aplikasi (riwayat analisis, laporan peta, tinjauan feed, laporan komando).
 
 - **Cadangan JSON**: unduh dan pulihkan seluruh data. Berkas memuat checksum, jadi berkas rusak ditolak. Saat memulihkan ada pratinjau (jumlah di berkas, baris rusak yang dibuang, hasil gabung) dan pilihan *Gabungkan* atau *Timpa*. Keadaan sebelumnya disimpan dulu dan bisa diurungkan.
 - **Salinan otomatis**: data disalin ke IndexedDB tiap 10 detik bila berubah. Bila data lokal hilang (misalnya riwayat peramban dibersihkan) muncul tawaran memulihkan. Aplikasi juga meminta *penyimpanan permanen* ke peramban. Salinan ini tetap di peramban yang sama, jadi unduh cadangan berkas secara berkala. Aplikasi mengingatkan bila cadangan lebih dari 7 hari.
@@ -116,7 +127,7 @@ Jendela **Data** di dock mengelola semua data aplikasi (riwayat analisis, lapora
 - **Deteksi duplikat**: record identik dihitung dan dapat dihapus.
 - **Validasi CSV Buzzer**: baris dengan kolom kurang, angka bukan bulat, jam bukan HH:MM, atau teks kosong ditolak dengan nomor baris dan alasan. Duplikat persis dibuang, kode provinsi tak dikenal dikosongkan, maksimum 5000 baris dan 5 MB. Tersedia tombol *Pakai data bersih* dan *Unduh baris ditolak*.
 
-Uji otomatis: `t10.js` (tidak disertakan di paket).
+Uji internal: tombol **Uji akurasi** di jendela Buzzer (18 akun sintetis berlabel). Lihat `docs/EVALUASI.md` untuk metode dan keterbatasannya.
 
 ## Bot Facebook (Halaman yang Anda kelola)
 
@@ -131,40 +142,3 @@ $env:FB_PAGE_ID="ID_HALAMAN"
 node collector/ambil-facebook.js --jam 24
 ```
 Token dikirim lewat header, tidak pernah dicetak, dan tautan paginasi yang memuat token tidak diikuti. Hasil `facebook.csv` diunggah di tab Deteksi Buzzer. Untuk izin tertentu Meta bisa meminta App Review bila aplikasi dipakai pihak lain, tetapi untuk Halaman milik sendiri dengan akun admin/pengembang aplikasi biasanya tidak perlu.
-
-## Offline penuh
-
-d3 dan topojson disertakan di `vendor/`, dan `dist/kartika-shield.html` berjalan tanpa internet.
-
-## Demo terpandu
-
-Saat dibuka pertama kali muncul layar pembuka. Tombol **Demo** di peta menjalankan alur 4 langkah dengan data contoh (analisis, buzzer, peta dini, pantauan). Data Anda dicadangkan sebelum demo dan dikembalikan sesudahnya.
-
-## Evaluasi akurasi
-
-Lihat `docs/EVALUASI.md` untuk metode, angka, dan keterbatasan. Penilai konten memakai aturan ditambah model ringan terlatih. Alat uji ada di jendela **Data**.
-
-## Caraka, agen pemantau yang selalu siaga
-
-`collector/caraka.js` berjalan terus dan memantau sumber resmi secara berkala: Bluesky (pencarian kata kunci), YouTube (komentar video terbaru), Facebook (Halaman milik Anda), dan RSS berita. Hasilnya dinilai, teks kembar lintas akun dideteksi, lalu disiarkan ke dasbor.
-
-**Menyiapkan**
-1. Salin `collector/caraka.config.contoh.json` menjadi `caraka.config.json`, isi `kataKunci`, dan isi `izinkanAsal` dengan alamat situs Anda bila dasbor dibuka dari GitHub Pages.
-2. Di Windows, salin `rahasia-caraka.contoh.bat` menjadi `rahasia-caraka.bat` lalu isi kunci dan token (berkas ini diabaikan git). Di sistem lain, isi variabel lingkungan yang sama.
-3. Uji dulu: `node collector/caraka.js --cek` (memeriksa konfigurasi dan tiap kredensial tanpa menjalankan pemantauan).
-4. Jalankan: `jalankan-caraka.bat` (Windows, otomatis mulai ulang bila berhenti) atau `node collector/caraka.js`. Untuk server, bungkus dengan `pm2` atau `systemd`.
-
-**Memakai di dasbor**
-- Tab **Feed**: isi alamat `http://localhost:8787`, tekan **Hubungkan kolektor**. Temuan muncul langsung di peta dan daftar.
-- Tab **Buzzer**: tombol **Ambil dari Caraka** memuat data 24 jam terakhir (`/buzzer.csv`) dan langsung menganalisisnya.
-- Status tiap sumber: `http://localhost:8787/stats`.
-
-**Perilaku siaga**
-- Tiap sumber berjalan sendiri. Bila satu gagal, ia mencoba lagi dengan jeda bertambah dan sumber lain tetap jalan.
-- Kredensial ditolak menghentikan sumber itu saja (tidak memukul API berulang) dan statusnya `ditolak`.
-- Kuota YouTube dijaga: pencarian video (100 unit) dibatasi tiap `cariVideoMenit` dan ada batas harian `kuotaHarian`. Saat habis, hanya komentar video yang sudah dikenal yang dipantau.
-- ID yang sudah diproses dan buffer 24 jam disimpan di `caraka-data/`, jadi restart tidak mengulang data.
-- Akun dianonimkan (hash) kecuali `akunAsli` diaktifkan. Server hanya membaca, hanya mendengar di komputer ini, dan hanya menerima asal yang diizinkan.
-- Facebook tidak membuka umur akun dan follower, jadi nilainya netral. Facebook hanya untuk Halaman yang Anda kelola.
-
-**Batas yang perlu diketahui**: Caraka diuji dengan API tiruan, belum dengan API sungguhan. Ia hanya membaca data publik atau milik Anda lewat API resmi. TikTok, X, dan Instagram tidak punya akses resmi yang bisa dipakai.

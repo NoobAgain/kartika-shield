@@ -1,15 +1,16 @@
 // Pusat Data: status penyimpanan, cadangan JSON, salinan otomatis IndexedDB, validasi impor, duplikat
-const XK=[['bs_h','Riwayat analisis'],['bs_m','Laporan peta dini'],['bs_rev','Tinjauan feed']];
-const XMEM=()=>({bs_h:hist,bs_m:mr,bs_rev:fRev});
+const XK=[['bs_h','Riwayat analisis'],['bs_m','Laporan peta dini'],['bs_rev','Tinjauan feed'],['bs_cmd','Laporan komando']];
+const XMEM=()=>({bs_h:hist,bs_m:mr,bs_rev:fRev,bs_cmd:cmd});
 const isO=o=>o&&typeof o==='object'&&!Array.isArray(o),isS=(v,n)=>typeof v==='string'&&v.length<=n,isN=v=>typeof v==='number'&&isFinite(v);
 // Pemeriksa bentuk tiap koleksi. Mengembalikan true bila record layak disimpan.
 const XV={
 bs_h:o=>isO(o)&&isS(o.v,40)&&isN(o.r)&&isN(o.d),
 bs_m:o=>isO(o)&&isS(o.p,4)&&PV.some(x=>x.c===o.p)&&isS(o.i,400)&&o.i&&isN(o.v)&&o.v>0&&isN(o.r)&&o.r>=0&&o.r<=100,
-bs_rev:o=>isO(o)&&isS(o.ts,40)&&isN(o.risk)&&(o.v===0||o.v===1)&&isS(o.text,400)};
+bs_rev:o=>isO(o)&&isS(o.ts,40)&&isN(o.risk)&&(o.v===0||o.v===1)&&isS(o.text,400),
+bs_cmd:o=>isO(o)&&isS(o.id,40)&&isS(o.ts,40)&&isS(o.judul,160)&&isS(o.status,20)&&isS(o.pic||'',80)&&isS(o.deadline||'',20)&&isS(o.catatan||'',400)&&isN(o.risiko)&&isS(o.ringkas||'',200)};
 const XD={ // kunci duplikat
 bs_h:o=>o.d+'|'+o.v+'|'+o.r,bs_m:o=>[o.p,o.i.trim().toLowerCase(),o.v,o.r].join('|'),
-bs_rev:o=>o.ts+'|'+o.text};
+bs_rev:o=>o.ts+'|'+o.text,bs_cmd:o=>o.id};
 function xDedupe(k,a){const seen=new Set(),out=[];let d=0;a.forEach(o=>{const keys=[XD[k](o)];if(keys.some(x=>seen.has(x))){d++;return}keys.forEach(x=>seen.add(x));out.push(o)});return{out,d}}
 const xHash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(16).padStart(8,'0')};
 const xKB=n=>n<1024?n+' B':(n/1024).toFixed(1)+' KB';
@@ -28,18 +29,18 @@ const xdb=()=>new Promise((ok,no)=>{try{const q=indexedDB.open('kartika',1);q.on
 const xGet=k=>xdb().then(db=>new Promise((ok,no)=>{const r=db.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})).catch(()=>undefined);
 const xPut=(k,v)=>xdb().then(db=>new Promise((ok,no)=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>ok(true);t.onerror=()=>no(t.error)})).catch(()=>false);
 let xLast='',xIgn=false,xHasAuto=false;
-async function xAuto(force){if(window.KDEMO||xLs('bs_demo_bk'))return;const d=XMEM(),n=xCount(d);if(n===0&&xHasAuto&&!xIgn)return; // jangan menimpa salinan dengan keadaan kosong tanpa persetujuan
+async function xAuto(force){const d=XMEM(),n=xCount(d);if(n===0&&xHasAuto&&!xIgn)return; // jangan menimpa salinan dengan keadaan kosong tanpa persetujuan
 const j=JSON.stringify(d);if(j===xLast&&!force)return;if(await xPut('auto',{ts:Date.now(),data:d})){xLast=j;xHasAuto=true}}
 function xApply(data,mode){return xPut('undo',{ts:Date.now(),data:XMEM()}).then(()=>{XK.forEach(([k])=>{let v=data[k]||[];if(mode==='gabung')v=xDedupe(k,(XMEM()[k]).concat(v)).out;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}});return xAuto(true)}).then(()=>{xMsg('Selesai. Memuat ulang aplikasi…');setTimeout(()=>location.reload(),600)})}
 // ---- tampilan
 const xMsg=h=>{$('#xprev').innerHTML=h?'<div style="margin-top:12px">'+h+'</div>':''};
-async function xStatus(){const d=XMEM();let per='belum diketahui',q='';try{if(navigator.storage){per=(await navigator.storage.persisted())?'<b style="color:#15803d">aktif</b> (peramban tidak akan menghapus otomatis)':'<b style="color:#c2410c">belum</b> (peramban boleh menghapus saat ruang menipis)';const e=await navigator.storage.estimate();q=` · terpakai ${xKB(e.usage||0)} dari ${xKB(e.quota||0)}`}}catch(e){}
-const auto=await xGet('auto'),bk=+xLs('bs_bk')||0,n=xCount(d),days=bk?Math.floor((Date.now()-bk)/864e5):null,warn=n>0&&(bk===0||days>=7);
+async function xStatus(){let per='belum diketahui',q='';try{if(navigator.storage){per=(await navigator.storage.persisted())?'<b style="color:#15803d">aktif</b> (peramban tidak akan menghapus otomatis)':'<b style="color:#c2410c">belum</b> (peramban boleh menghapus saat ruang menipis)';const e=await navigator.storage.estimate();q=` · terpakai ${xKB(e.usage||0)} dari ${xKB(e.quota||0)}`}}catch(e){}
+const d=XMEM();const auto=await xGet('auto'),bk=+xLs('bs_bk')||0,n=xCount(d),days=bk?Math.floor((Date.now()-bk)/864e5):null,warn=n>0&&(bk===0||days>=7);
 const rows=XK.map(([k,nm])=>{const s=xLs(k),ok=s===''?d[k].length===0:s===JSON.stringify(d[k]);return`<tr><td>${nm}</td><td style="text-align:right">${d[k].length}</td><td style="text-align:right">${xKB(s.length)}</td><td>${ok?'':'<b style="color:#b3202a">tidak tersimpan, ruang peramban penuh atau diblokir</b>'}</td></tr>`}).join('');
 $('#xst').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:.85rem"><tr style="text-align:left"><th>Data</th><th style="text-align:right">Jumlah</th><th style="text-align:right">Ukuran</th><th></th></tr>${rows}</table>
 <p class=note style="margin-top:8px">Penyimpanan permanen: ${per}${q}<br>Salinan otomatis di peramban: ${auto?new Date(auto.ts).toLocaleString('id-ID')+' ('+xCount(auto.data||{})+' data)':'belum ada'}<br>Cadangan berkas terakhir: ${bk?new Date(bk).toLocaleString('id-ID')+' ('+days+' hari lalu)':'belum pernah'}</p>${warn?'<p style="color:#b3202a;font-size:.85rem"><b>Disarankan unduh cadangan sekarang.</b> '+(bk?'Cadangan terakhir sudah '+days+' hari.':'Belum pernah ada cadangan berkas.')+'</p>':''}`;
 const b=document.querySelector('#kdock [data-id=x]');if(b)b.style.boxShadow=warn?'inset 0 -2px 0 #ef4444':'';return{auto}}
-$('#xbk').onclick=()=>{const b=xBuild();dlFile('kartika-shield-cadangan-'+stamp()+'.json',new Blob([JSON.stringify(b)],{type:'application/json'}));try{localStorage.setItem('bs_bk',String(Date.now()))}catch(e){}xStatus();xMsg('Cadangan diunduh ('+Object.values(b.jumlah).reduce((a,c)=>a+c,0)+' data). Simpan juga di flashdisk atau penyimpanan lain.')};
+$('#xbk').onclick=()=>{const b=xBuild();dlFile('kartika-shield-cadangan-'+stamp()+'.json',new Blob([JSON.stringify(b)],{type:'application/json'}));try{localStorage.setItem('bs_bk',String(Date.now()))}catch(e){}xStatus();xMsg('Cadangan diunduh ('+Object.values(b.jumlah).reduce((a,c)=>a+c,0)+' data). Simpan juga di media penyimpanan lain.')};
 $('#xfile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(f.size>20e6){xMsg('Berkas lebih dari 20 MB, ditolak.');return}
 f.text().then(t=>{let b;try{b=JSON.parse(t)}catch(x){xMsg('Berkas bukan JSON yang valid.');return}const r=xValidate(b);if(!r.ok){xMsg('<b style="color:#b3202a">'+r.err+'</b>');return}
 const cur=XMEM(),tb=XK.map(([k,nm])=>{const m=xDedupe(k,cur[k].concat(r.data[k])).out.length;return`<tr><td>${nm}</td><td style="text-align:right">${r.per[k].n}</td><td style="text-align:right">${r.per[k].bad?'<b style="color:#b3202a">'+r.per[k].bad+'</b>':0}</td><td style="text-align:right">${cur[k].length}</td><td style="text-align:right">${m}</td></tr>`}).join('');

@@ -5,7 +5,3 @@ node_modules/
 .DS_Store
 hasil*.csv
 log*.csv
-caraka-data/
-collector/caraka-data/
-collector/rahasia-caraka.bat
-collector/caraka.config.json

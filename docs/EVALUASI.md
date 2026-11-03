@@ -1,34 +1,37 @@
 # Evaluasi penilai konten (jujur dan dapat diulang)
 
 ## Apa yang diukur
-Penilai konten Kartika Shield menggabungkan dua hal:
-1. **Aturan pola manipulasi** (huruf kapital berlebihan, desakan menyebar, klaim penyembunyian, ancaman, isu SARA bersama pola lain, tanpa sumber).
-2. **Model ringan terlatih** (regresi logistik, unigram dan bigram biner, 2.500 fitur, sekitar 46 KB) yang menghitung kemiripan gaya dengan klaim hoaks terdokumentasi. Model hanya menambah maksimal 40 poin, sehingga tidak bisa sendirian menghasilkan RISIKO SEDANG atau TINGGI.
+Penilai konten Kartika Shield versi ini memakai **aturan pola manipulasi** yang berjalan lokal di peramban:
+1. Huruf kapital atau tanda seru berlebihan.
+2. Desakan menyebarkan segera.
+3. Klaim penyembunyian oleh pihak berkuasa (konspirasi).
+4. Bahasa ancaman terhadap kelompok.
+5. Eksploitasi isu SARA bila bergabung dengan pola lain.
+6. Tidak mencantumkan sumber yang dapat dicek.
 
-Penilai ini alat bantu triase. Ia tidak memeriksa fakta dan selalu mengarahkan ke tabayyun.
+Skor 0-100 dipetakan ke RENDAH, PERLU DIVERIFIKASI, SEDANG, atau TINGGI. Ini **indikator triase pola bahasa, bukan pemeriksaan fakta** dan bukan putusan benar atau salah. Hanya cek fakta resmi yang dapat menyatakan sebuah klaim hoaks.
 
-## Data
-IDNHoaxCorpus (Universitas Muhammadiyah Ponorogo, lisensi MIT), tweet berbahasa Indonesia tahun 2020. Dipakai 3.772 baris berlabel (3.042 hoaks, 730 valid). Baris berlabel "?" dibuang.
+## Arah narasi dan pemetaan DISARM
+- **Arah narasi** diperkirakan dari kata penilaian/dukungan dan **sasaran** dari kata lembaga/kelompok (pemerintah, agama, etnis/warga asing, kesehatan, politik, tokoh publik, ekonomi, kelompok rentan). Hasilnya dipakai di Analisis, Feed, Buzzer, dan Laporan Komando.
+- **DISARM** dipetakan dengan aturan sinyal di `js/06-disarm.js`: tagar kampanye (`T0015.002`), clickbait (`T0016`), konspirasi (`T0022`), pembelahan (`T0079`), eksploitasi SARA (`T0083`), ujaran kebencian (`T0140.003`), deepfake/cheap fake (`T0087.001`, `T0086.003`), amplifikasi otomatis/serempak (`T0049.003`, `T0049.005`), akun baru/massal (`T0150.001`, `T0150.008`), dan seterusnya.
+- Pemetaan ini **tidak** divalidasi oleh pakar DISARM dan bukan atribusi resmi. Rujukan: DISARM Foundation, CC BY-SA 4.0 (lihat `THIRD_PARTY.md`).
 
-## Cara menguji
-Validasi silang 5 lipatan **dikelompokkan per topik** (kata kunci), jadi klaim yang hampir sama tidak muncul di data latih dan data uji sekaligus. Ini lebih ketat daripada pembagian acak.
-
-| Penilai | AUC | Presisi (ambang 20) | Recall (ambang 20) | Salah tandai (ambang 20) |
-|---|---|---|---|---|
-| Aturan saja | 0,502 | 84,5% | 6,6% | 5,1% |
-| Model saja | 0,779 | 84,5% | 97,1% | 74,1% |
-| **Gabungan (yang dipakai)** | **0,730** | 90,2% | 70,1% | 31,9% |
-
-Ambang 20 berarti "perlu diverifikasi ke atas". Pada ambang 45 (risiko sedang ke atas) presisi 94,3%, recall 14,6%, salah tandai 3,7%.
+## Data dan pengujian
+- **Tidak ada model terlatih** yang disertakan pada versi ini. Semua penilaian berjalan dengan aturan lokal; teks tidak dikirim ke server.
+- Tab **Buzzer** menyediakan **Uji akurasi internal** dengan 18 akun sintetis berlabel (9 positif, 9 negatif), termasuk kasus sulit: akun lama yang diretas, spam tunggal, dan relawan sah yang bergerak serempak. Tabel TP/FP/FN/TN hanya menunjukkan pertukaran antara ambang ketat dan longgar, bukan akurasi lapangan.
+- Untuk data nyata: sambungkan Feed, tinjau hasil dengan tombol **Tepat** / **Salah tandai** (targetkan minimal 30 tinjauan), lalu unduh CSV tinjauan. Ringkasan presisi berjalan muncul di atas daftar.
 
 ## Keterbatasan (baca sebelum mengutip angka)
-- **Aturan saja tidak lebih baik dari tebakan acak pada data ini** (AUC 0,502). Aturan dirancang untuk provokasi, SARA, dan desakan menyebar, sedangkan korpus ini didominasi hoaks kesehatan dan label "valid" berupa tweet bantahan dan cek fakta. Kami tidak punya data berlabel SARA untuk membuktikan aturan itu bekerja pada domain sasarannya.
-- Proporsi hoaks di korpus 81%. Presisi di dunia nyata dengan hoaks yang jarang akan lebih rendah. Lihat kolom salah tandai.
-- Label korpus berasal dari domain sumber tweet, jadi sebagian label berisik.
-- Model belajar topik (susu, ikan, kopi) dan kata penanda bantahan (bantah, hoaks, faktanya). Kemampuan pada topik politik dan SARA belum terbukti.
-- Deteksi buzzer divalidasi pada data sintetis dan tiruan, belum pada data media sosial berlabel.
+- Aturan bahasa mudah dihindari dan bisa salah tandai pada sarkasme, kutipan berita, atau teks bantahan.
+- Belum ada validasi pada korpus berlabel nyata. Data sintetis tidak mewakili distribusi lapangan, sehingga angka internal tidak boleh disebut sebagai akurasi sesungguhnya.
+- Deteksi buzzer bersandar pada kemiripan teks, waktu serempak, dan profil akun. Akun sah yang bergerak serempak bisa ikut tertandai.
+- Arah/sasaran narasi dan DISARM adalah heuristik kata kunci; sarkasme, kutipan, bahasa daerah, dan kalimat bantahan dapat salah petakan. Tidak ada validasi lapangan pada versi ini.
+- Laporan Komando merangkum data sesi secara otomatis. Angka dan label tetap indikator; periksa manual sebelum dipakai untuk tindakan.
+- Teks unggahan hanya berada di memori peramban. Tinjauan dan riwayat disimpan lokal di peramban pengguna.
+- Skor tidak boleh dipakai untuk menuduh individu atau kelompok. Selalu rujuk sumber primer dan cek fakta resmi.
 
 ## Mengulang pengujian
-1. Buka jendela **Data**, bagian **Uji akurasi penilai konten**.
-2. Unggah CSV `teks,label`. Contoh sintetis: `eval/contoh-uji.csv` (24 baris buatan sendiri, bukan pengukuran).
-3. Untuk data sungguhan, gunakan data yang **tidak** dipakai melatih model.
+1. Buka jendela **Buzzer** dari dock peta, lalu tekan **Uji akurasi** untuk melihat tabel ambang pada data sintetis.
+2. Untuk pengukuran nyata, sambungkan **Feed**, tandai minimal 30 hasil, lalu unduh **tinjauan (CSV)** sebagai bukti.
+3. Buka **Laporan Komando**, susun laporan, simpan tindak lanjut, lalu unduh JSON/CSV atau cetak PDF sebagai rekap sesi.
+4. Simpan tanggal, sumber, dan jumlah sampel bersama laporan agar hasil dapat diperiksa ulang.
