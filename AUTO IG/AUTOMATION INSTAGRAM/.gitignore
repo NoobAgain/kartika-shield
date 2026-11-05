@@ -1,0 +1,12 @@
+node_modules/
+.env
+profiles/
+queue.json
+queue.json.tmp
+creator bot/
+ai/
+*.exe
+*.log
+debug_*.jpg
+debug_*.html
+error_*.jpg

@@ -1,0 +1,9 @@
+{
+  "account1": { "profileDir": "./profiles/account1", "displayName": "my_account1" },
+  "account2": { "profileDir": "./profiles/account2", "displayName": "my_account2" },
+  "account3": { "profileDir": "./profiles/account3", "displayName": "my_account3" },
+  "account4": { "profileDir": "./profiles/account4", "displayName": "my_account4" },
+  "account5": { "profileDir": "./profiles/account5", "displayName": "my_account5" },
+  "account6": { "profileDir": "./profiles/account6", "displayName": "my_account6" },
+  "account7": { "profileDir": "./profiles/account7", "displayName": "my_account7" }
+}

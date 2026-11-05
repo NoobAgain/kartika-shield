@@ -10,7 +10,7 @@ index.html          kerangka halaman
 assets/             gaya (style.css) dan logo
 js/                 kode aplikasi, satu berkas per fitur (dimuat berurutan, angka di awal nama menentukan urutan)
 data/               data statis (batas provinsi, lambang, peta dunia)
-collector/          kolektor Bluesky/RSS (Node.js >= 22, tanpa dependensi)
+collector/          kolektor Bluesky/RSS + bot pencarian otomatis (Node.js >= 22, tanpa dependensi)
 tools/build.js      menggabungkan semuanya menjadi satu berkas
 dist/               hasil build, kartika-shield.html (berkas tunggal mandiri)
 ```
@@ -29,6 +29,7 @@ Tampilan utama adalah **Peta Dunia Live**. Jendela Analisis, Buzzer, Feed, Peta 
 |---|---|
 | Aliran Bluesky langsung dari peramban | Feed, tombol Sambungkan |
 | Kolektor di komputer sendiri (Bluesky + RSS/Google News, ada deteksi koordinasi dan berita lintas penerbit) | Feed, Hubungkan kolektor |
+| Bot pencarian otomatis (Bluesky Search API, kata kunci dan jeda bisa diubah) | Feed, Hubungkan kolektor |
 | Tempel teks | Analisis |
 | Impor CSV unggahan | Buzzer |
 | Isi manual per provinsi | Peta Dini |
@@ -52,6 +53,11 @@ Pengaturan lewat variabel lingkungan: `PORT` (8787), `HOST` (127.0.0.1), `MIN_RI
 Bila `RSS_URLS` tidak diisi, kolektor memakai daftar bawaan Google News Indonesia, Antara, CNN Indonesia, Detik, Kumparan, dan Tempo. Isi `RSS_URLS` dengan daftar URL dipisahkan koma untuk mengganti daftar itu; isi `off` (`RSS_URLS=off`) untuk mematikan RSS. Kolektor menandai judul yang mirip dari minimal dua penerbit berbeda dalam tiga jam sebagai **Agregasi Berita/viral** dan mengirimkannya ke Feed. RSS hanya diambil kolektor (bukan peramban) agar tidak terkena batas CORS.
 
 Bila dasbor dibuka dari GitHub Pages: `ALLOW_ORIGIN=https://USERNAME.github.io node server.js`, lalu isi `http://localhost:8787` di tab Feed. Kolektor tidak bisa berjalan di GitHub Pages atau Vercel karena harus tersambung terus-menerus.
+
+## Bot pencarian otomatis (Feed Bluesky)
+Kolektor menjalankan pencarian publik Bluesky secara berkala, menilai hasilnya, lalu mengirim yang melewati ambang risiko ke Feed. Tidak perlu App Password atau kredensial lain. Di tab Feed, hubungkan kolektor, isi kata kunci dan jeda, lalu klik **Cari sekarang** atau **Aktifkan otomatis**.
+
+Bawaan: kata kunci `hoaks,disinformasi,provokasi,pemilu,konflik sosial`, jeda 10 menit, jendela 24 jam, maksimal 30 hasil per putaran, dan ambang `MIN_RISK` 45. Ubah lewat `BOT_KEYWORDS`, `BOT_INTERVAL_MIN`, `BOT_LOOKBACK_HOURS`, `BOT_LIMIT`; setel `BOT_AUTO=0` untuk mematikan pencarian otomatis saat kolektor mulai. Hasil dengan skor di bawah ambang tetap dihitung di statistik tetapi tidak dikirim ke Feed. Duplikat dicegah selama kolektor berjalan.
 
 ## Bot pengambil data Buzzer (Bluesky)
 Mengambil unggahan publik, jumlah follower dan following, serta umur akun lewat API resmi Bluesky, lalu menulisnya dalam format tab Deteksi Buzzer (`akun,umur_akun_hari,follower,following,jam,teks|KODE`).

@@ -12,7 +12,17 @@ fws.onerror=()=>fSt('Gagal tersambung. Buka aplikasi dari berkas lokal lalu coba
 fws.onmessage=e=>{fc[0]++;if(fc[0]%20===0)$('#fn1').textContent=fc[0];const d=e.data;if(d.indexOf('"id"')<0)return;let j;try{j=JSON.parse(d)}catch(x){return}const r=j.commit&&j.commit.record;if(!r||j.commit.operation!=='create'||!r.text||!(r.langs||[]).includes('id'))return;fc[1]++;$('#fn2').textContent=fc[1];
 const h=heur(r.text);if(h.risk<45)return;fc[2]++;$('#fn3').textContent=fc[2];const g=kCity(r.text);kEmit(h.sara?0:3,g,h.risk,r.text,'Bluesky');
 fAdd({risk:h.risk,src:'Bluesky (langsung)',text:r.text},g)}};
-let fes=null,fViral=0;
+let fes=null,fViral=0,botAuto=false;
+const botBase=()=>($('#fk').value.trim()||'http://localhost:8787').replace(/\/$/,'');
+const botBody=()=>({keywords:$('#botk').value,intervalMin:+$('#boti').value||10});
+async function botApi(path,body){const r=await fetch(botBase()+path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
+const botTime=s=>{try{return s?new Date(s).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):'-'}catch(e){return '-'}};
+function botStatus(t){$('#botst').textContent=t}
+function botRender(b){if(!b)return;botAuto=!!b.auto;if(document.activeElement!==$('#botk'))$('#botk').value=(b.keywords||[]).join(', ');if(document.activeElement!==$('#boti'))$('#boti').value=b.intervalMin||10;$('#botauto').textContent=botAuto?'Hentikan otomatis':'Aktifkan otomatis';$('#botnow').disabled=!!b.running;let t=b.running?'Mencari unggahan publik...':b.lastRun?('Terakhir '+botTime(b.lastRun)+' · '+(b.lastFound||0)+' baru · '+(b.lastEmitted||0)+' dikirim'):'Bot belum berjalan.';if(botAuto&&b.nextRun)t+=' · otomatis tiap '+(b.intervalMin||10)+' menit';if(b.lastError&&!b.running)t+=' · '+b.lastError;botStatus(t)}
+function botConnect(){if(!fes)$('#fkc').click()}
+async function botRefresh(){try{botRender(await botApi('/bot/status'))}catch(e){}}
+$('#botnow').onclick=async()=>{try{botConnect();botStatus('Menghubungkan dan menjalankan pencarian...');$('#botnow').disabled=true;const r=await botApi('/bot/search',botBody());botRender(r.bot||r)}catch(e){$('#botnow').disabled=false;botStatus('Gagal menjalankan bot: '+e.message)}};
+$('#botauto').onclick=async()=>{try{botConnect();const r=await botApi('/bot/config',{...botBody(),auto:!botAuto});botRender(r.bot||r)}catch(e){botStatus('Gagal mengatur bot: '+e.message)}};
 let fAll=[],fRev=[];try{fRev=JSON.parse(localStorage.getItem('bs_rev')||'[]')}catch(e){}
 const svRev=()=>{try{localStorage.setItem('bs_rev',JSON.stringify(fRev))}catch(e){}};
 const csvc=v=>{v=String(v==null?'':v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -30,9 +40,10 @@ $('#fkc').onclick=()=>{if(fes){fes.close();fes=null;$('#fkc').textContent='Hubun
 if(ksim)$('#ksm').click();const u=($('#fk').value.trim()||'http://localhost:8787').replace(/\/$/,'');
 try{fes=new EventSource(u+'/events')}catch(e){fes=null;fSt('Koneksi tidak diizinkan di halaman ini. Buka versi berkas mandiri dari komputer Anda.');return}
 fSt('Menyambung ke kolektor...');$('#fkc').textContent='Putuskan';
-fes.onopen=()=>fSt('Kolektor tersambung: '+u);
-fes.onerror=()=>fSt('Kolektor tidak terjangkau. Pastikan server berjalan dan aplikasi dibuka dari berkas lokal.');
+fes.onopen=()=>{fSt('Kolektor tersambung: '+u);botRefresh()};
+fes.onerror=()=>{fSt('Kolektor tidak terjangkau. Pastikan server berjalan dan aplikasi dibuka dari berkas lokal.');$('#botnow').disabled=false};
 fes.addEventListener('stat',e=>{const s=JSON.parse(e.data);$('#fn1').textContent=s.seen;$('#fn2').textContent=s.id;$('#fn3').textContent=s.flagged;if(s.viral!=null){fViral=s.viral;$('#fn4').textContent=fViral}});
+fes.addEventListener('bot',e=>{try{botRender(JSON.parse(e.data))}catch(x){}});
 fes.addEventListener('hit',e=>{const h=JSON.parse(e.data),g=h.city?TG.find(x=>x[0]===h.city):null;if(h.viral){fViral++;$('#fn4').textContent=fViral}kEmit(h.type,g,h.risk,h.text,h.src);fAdd(h,g)})};
 fSum();
 $('#fcsv').onclick=()=>{if(!fAll.length){fSt('Belum ada hasil untuk diunduh.');return}dlFile('hasil-feed-'+stamp()+'.csv',new Blob([csvOf(['waktu','sumber','risiko','akun_serentak','wilayah','akun_hash','teks','viral_sumber','viral_penerbit','arah_narasi','sasaran_narasi','isu','disarm'],fAll.map(r=>[r.ts,r.src,r.risk,r.co,r.city,r.acct,r.text,r.viral,r.sources,r.arah,r.sasaran,r.isu,r.disarm]))],{type:'text/csv;charset=utf-8'}))};
