@@ -1,0 +1,336 @@
+{
+ "total": 66,
+ "lulus": 66,
+ "hasil": [
+  {
+   "nama": "N01 leet \"s3b4rk4n\" -> sebarkan",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "N02 huruf dipisah spasi disatukan",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "N03 huruf berulang diringkas",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "N04 \"covid19\" tidak dirusak pada versi mentah",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "N05 URL dan @mention dibuang",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "N06 input aneh tidak melempar galat",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C01 EMOSI terdeteksi",
+   "ok": true,
+   "ms": 17
+  },
+  {
+   "nama": "C02 KETAKUTAN terdeteksi",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "C03 CLICKBAIT terdeteksi",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "C04 FRAMING terdeteksi",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C05 POLARISASI terdeteksi",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C06 PROVOKATIF terdeteksi",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "C07 REPETISI (kata berulang) terdeteksi",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C08 TIDAK_TERVERIFIKASI terdeteksi",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C09 teks netral = 0 di semua kategori",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C10 teks kosong/whitespace -> risiko 0 dan bendera kosong",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C11 bukti (kutipan) selalu menyertai indikator",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "C12 metode + keterbatasan + keyakinan selalu ada",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C13 skor kategori <= batas dan total <= 100",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "C14 deterministik (input sama = hasil sama)",
+   "ok": true,
+   "ms": 2
+  },
+  {
+   "nama": "C15 ambang verdict: 19=RENDAH 20=VERIFIKASI 45=SEDANG 65=TINGGI",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K01 [B-02] bantahan bersumber: risiko rendah, arah \"Membantah/meluruskan\"",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K02 [B-03] ujaran kebencian eksplisit -> TINGGI (aturan lantai)",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K03 [B-04] leet-speak terdeteksi",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K04 [B-05] clickbait terklasifikasi sebagai CLICKBAIT",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K05 [B-06] teks kosong tidak bernilai 10",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K06 ajakan \"share\" saja (donor darah) tidak jadi SEDANG",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K07 kata identitas saja BUKAN SARA",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "K08 identitas + ancaman = indikasi SARA",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K09 tanpa sumber tidak dihitung pada teks netral",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "K10 klaim viral tipikal -> TINGGI",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "R01 teks 200 ribu karakter selesai < 2 dtk",
+   "ok": true,
+   "ms": 93
+  },
+  {
+   "nama": "R02 pola ReDoS (a a a ..., !!!!, kata panjang) selesai < 2 dtk",
+   "ok": true,
+   "ms": 31
+  },
+  {
+   "nama": "R03 tipe input non-string tidak melempar",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "R04 kata \"__proto__\"/\"constructor\" pada teks tidak merusak",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M01 parseWaktu: HH:MM, ISO, angka, tidak valid",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M02 duplikat persis dikelompokkan",
+   "ok": true,
+   "ms": 3
+  },
+  {
+   "nama": "M03 parafrase urutan kata dikelompokkan",
+   "ok": true,
+   "ms": 2
+  },
+  {
+   "nama": "M04 teks tak berkaitan tidak dikelompokkan",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M05 [B-12] teks berakhiran \"|ok\" tidak dipotong di impor",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M06 data kosong / bukan array -> hasil kosong tanpa galat",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M07 baris tanpa field (u/tx/age kosong) tidak melempar",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M08 [BUG] nama akun __proto__/constructor/toString tidak membuat crash",
+   "ok": true,
+   "ms": 3
+  },
+  {
+   "nama": "M09 jam melewati tengah malam: serempak terdeteksi",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M10 tanggal berbeda: tidak serempak",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "M11 PRINSIP: teks+waktu saja (akun lama) tidak lebih dari \"sedang\"",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "M12 PRINSIP: label \"indikasi kuat tidak autentik\" butuh >=2 sinyal profil",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M13 satu akun mengulang: koordinasi 0",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "M14 bantahan dikecualikan dari penguat",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "M15 graf: simpul/sisi konsisten dan bersumber dari baris data",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M16 kronologi terurut menaik",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "M17 [KETERBATASAN DIDOKUMENTASI] stance berlawanan tanpa kata bantahan ikut satu klaster",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "M18 deterministik",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "E01 bobot komponen berjumlah 1,0",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "E02 ambang & definisi level tersedia (4 level, urut menurun)",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "E03 kampanye terkoordinasi -> level >= SIAGA",
+   "ok": true,
+   "ms": 3
+  },
+  {
+   "nama": "E04 skor = jumlah berbobot komponen (dapat direproduksi)",
+   "ok": true,
+   "ms": 2
+  },
+  {
+   "nama": "E05 setiap komponen 0..100 dan punya metrik penjelas",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "E06 jejak data: sumberBaris ⊆ id baris masukan",
+   "ok": true,
+   "ms": 2
+  },
+  {
+   "nama": "E07 GERBANG: volume besar tanpa manipulasi tidak jadi AWAS/SIAGA",
+   "ok": true,
+   "ms": 3
+  },
+  {
+   "nama": "E08 data kosong -> daftar kosong tanpa galat",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "E09 keyakinan rendah untuk sampel kecil & jam-saja",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "E10 rekomendasi hanya defensif (tanpa kata buzzer tandingan/manipulasi balasan)",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "L01 laporan pada data kosong tidak melempar",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "nama": "L02 laporan memuat 8 bagian wajib",
+   "ok": true,
+   "ms": 2
+  },
+  {
+   "nama": "L03 teks laporan memuat bagian & batasan",
+   "ok": true,
+   "ms": 2
+  }
+ ]
+}

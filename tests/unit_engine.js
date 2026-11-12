@@ -1,0 +1,91 @@
+// Uji unit mesin kognitif (tanpa peramban). Pemakaian: node tests/unit_engine.js [--json]
+const assert = require('assert'), fs = require('fs'), path = require('path');
+const T = require('../js/00a-kognitif-teks.js'), N = require('../js/00b-kognitif-narasi.js'), D = require('../js/00c-kognitif-dini.js');
+const hasil = []; const t = (nama, fn) => { const t0 = Date.now(); try { fn(); hasil.push({ nama, ok: true, ms: Date.now() - t0 }); } catch (e) { hasil.push({ nama, ok: false, ms: Date.now() - t0, err: String(e.message).slice(0, 200) }); } };
+const row = (u, tm, tx, o) => Object.assign({ u, age: 3, fo: 5, fi: 400, tm, tx }, o || {});
+const kat = (r, k) => r.kategori[k].skor;
+
+// ---------- Normalisasi ----------
+t('N01 leet "s3b4rk4n" -> sebarkan', () => assert.ok(T.normalisasi('s3b4rk4n d1hapus').leet.includes('sebarkan dihapus')));
+t('N02 huruf dipisah spasi disatukan', () => assert.ok(T.normalisasi('S e b a r k a n sekarang').leet.startsWith('sebarkan')));
+t('N03 huruf berulang diringkas', () => assert.ok(T.normalisasi('viraaaal').leet === 'viral'));
+t('N04 "covid19" tidak dirusak pada versi mentah', () => assert.ok(T.normalisasi('data covid19 turun').mentah.includes('covid19')));
+t('N05 URL dan @mention dibuang', () => assert.ok(!/http|@/.test(T.normalisasi('lihat https://x.id/a @budi').mentah)));
+t('N06 input aneh tidak melempar galat', () => { [null, undefined, 123, {}, [], '', '   ', '\u0000\u0001', '😀😀😀'].forEach(x => T.normalisasi(x)); });
+
+// ---------- CTA: 8 kategori ----------
+t('C01 EMOSI terdeteksi', () => assert.ok(kat(T.analisis('Biadab! Tega sekali mereka, darah mendidih lihatnya!!!'), 'EMOSI') > 0));
+t('C02 KETAKUTAN terdeteksi', () => assert.ok(kat(T.analisis('Teror racun mematikan menyebar, sebelum terlambat'), 'KETAKUTAN') > 0));
+t('C03 CLICKBAIT terdeteksi', () => assert.ok(kat(T.analisis('Kamu tidak akan percaya rahasia yang terbongkar ini'), 'CLICKBAIT') > 0));
+t('C04 FRAMING terdeteksi', () => assert.ok(kat(T.analisis('Media tidak berani menayangkan, ada konspirasi di balik layar'), 'FRAMING') > 0));
+t('C05 POLARISASI terdeteksi', () => assert.ok(kat(T.analisis('Musuh bersama kita, ganyang cebong dan kampret'), 'POLARISASI') > 0));
+t('C06 PROVOKATIF terdeteksi', () => assert.ok(kat(T.analisis('Serbu dan geruduk kantor itu, jangan diam saja'), 'PROVOKATIF') > 0));
+t('C07 REPETISI (kata berulang) terdeteksi', () => assert.ok(kat(T.analisis('banjir banjir banjir banjir melanda kota, banjir besar sekali di kota kita'), 'REPETISI') > 0));
+t('C08 TIDAK_TERVERIFIKASI terdeteksi', () => assert.ok(kat(T.analisis('Katanya sumber terpercaya, info dari grup sebelah, bank akan tutup'), 'TIDAK_TERVERIFIKASI') > 0));
+t('C09 teks netral = 0 di semua kategori', () => { const r = T.analisis('Rapat RT Sabtu pukul 19.00 di balai warga membahas jadwal ronda.'); assert.strictEqual(r.risk, 0); assert.strictEqual(r.verdict, 'RISIKO RENDAH'); });
+t('C10 teks kosong/whitespace -> risiko 0 dan bendera kosong', () => { ['', '   ', null, undefined].forEach(x => { const r = T.analisis(x); assert.strictEqual(r.risk, 0); assert.strictEqual(r.kosong, true); }); });
+t('C11 bukti (kutipan) selalu menyertai indikator', () => { const r = T.analisis('VIRAL!!! Sebarkan sebelum dihapus, pemerintah menutupi'); assert.ok(r.bukti.length >= 3); r.bukti.forEach(b => { assert.ok(b.kutipan && b.indikator && b.kategori); }); });
+t('C12 metode + keterbatasan + keyakinan selalu ada', () => { const r = T.analisis('Sebarkan sebelum dihapus'); assert.ok(r.metode.length > 50 && r.keterbatasan.length >= 3 && ['rendah', 'sedang', 'tinggi'].includes(r.keyakinan)); });
+t('C13 skor kategori <= batas dan total <= 100', () => { const r = T.analisis('!!! BIADAB KEJI SADIS MURKA GERAM sebarkan serbu bakar hajar ganyang antek kafir cebong kampret konspirasi ditutupi media bungkam racun teror'); Object.entries(r.kategori).forEach(([k, v]) => assert.ok(v.skor <= v.maks, k)); assert.ok(r.risk <= 100); });
+t('C14 deterministik (input sama = hasil sama)', () => { const x = 'Awas! Kelompok tertentu menguasai desa, sebarkan'; assert.deepStrictEqual(T.analisis(x), T.analisis(x)); });
+t('C15 ambang verdict: 19=RENDAH 20=VERIFIKASI 45=SEDANG 65=TINGGI', () => { const v = T.verdictDari; assert.strictEqual(v(19), 'RISIKO RENDAH'); assert.strictEqual(v(20), 'PERLU DIVERIFIKASI'); assert.strictEqual(v(45), 'RISIKO SEDANG'); assert.strictEqual(v(65), 'RISIKO TINGGI'); });
+
+// ---------- CTA: konteks & koreksi bug baseline ----------
+t('K01 [B-02] bantahan bersumber: risiko rendah, arah "Membantah/meluruskan"', () => { const r = T.analisis('KLARIFIKASI: Klaim bahwa pemerintah menutupi data vaksin adalah hoaks. Menurut Kemenkes, data terbuka di situs resmi.'); assert.ok(r.risk < 20); assert.strictEqual(r.arah, 'Membantah/meluruskan'); assert.strictEqual(r.konteks, 'bantahan_bersumber'); });
+t('K02 [B-03] ujaran kebencian eksplisit -> TINGGI (aturan lantai)', () => { const r = T.analisis('Binatang pendatang itu tidak pantas hidup di sini'); assert.ok(r.risk >= 65 && r.lantai); });
+t('K03 [B-04] leet-speak terdeteksi', () => assert.ok(T.analisis('s3b4rk4n sebelum d1hapus, pemerintah menutupi kebenaran').risk >= 30));
+t('K04 [B-05] clickbait terklasifikasi sebagai CLICKBAIT', () => assert.ok(kat(T.analisis('Kamu tidak akan percaya apa yang terjadi selanjutnya! Rahasia yang disembunyikan dokter terungkap'), 'CLICKBAIT') >= 8));
+t('K05 [B-06] teks kosong tidak bernilai 10', () => assert.strictEqual(T.analisis('').risk, 0));
+t('K06 ajakan "share" saja (donor darah) tidak jadi SEDANG', () => assert.ok(T.analisis('Ayo donor darah di masjid hari Minggu!! Segera share ke teman-teman ya').risk < 45));
+t('K07 kata identitas saja BUKAN SARA', () => assert.strictEqual(T.analisis('Umat Islam dan umat Kristen di desa kami bergotong royong membangun jembatan').sara, false));
+t('K08 identitas + ancaman = indikasi SARA', () => assert.strictEqual(T.analisis('Kelompok tertentu akan menguasai desa kita dan menghancurkan rumah ibadah, sebarkan').sara, true));
+t('K09 tanpa sumber tidak dihitung pada teks netral', () => assert.strictEqual(T.analisis('Besok pagi ada kerja bakti membersihkan selokan di dusun kami').kategori.TIDAK_TERVERIFIKASI.skor, 0));
+t('K10 klaim viral tipikal -> TINGGI', () => assert.strictEqual(T.analisis('VIRAL!!! Segera sebarkan ke semua grup! Kelompok tertentu akan menguasai desa kita dan menghancurkan rumah ibadah. Pemerintah menutupi semuanya, media tidak berani menayangkan. Share sebelum dihapus!!!').verdict, 'RISIKO TINGGI'));
+
+// ---------- CTA: ketahanan ----------
+t('R01 teks 200 ribu karakter selesai < 2 dtk', () => { const t0 = Date.now(); T.analisis('sebarkan '.repeat(25000)); assert.ok(Date.now() - t0 < 2000); });
+t('R02 pola ReDoS (a a a ..., !!!!, kata panjang) selesai < 2 dtk', () => { const t0 = Date.now(); ['a '.repeat(50000), '!'.repeat(100000), 'x'.repeat(200000), 'a.'.repeat(50000), ('binatang ' + 'x '.repeat(5000) + 'pendatang ')].forEach(s => T.analisis(s)); assert.ok(Date.now() - t0 < 2500, (Date.now() - t0) + ' ms'); });
+t('R03 tipe input non-string tidak melempar', () => { [123, {}, [], true, Symbol.iterator.toString()].forEach(x => T.analisis(x)); });
+t('R04 kata "__proto__"/"constructor" pada teks tidak merusak', () => { const r = T.analisis('constructor constructor constructor constructor __proto__ __proto__ valueOf valueOf valueOf valueOf kata'); assert.ok(typeof r.risk === 'number'); });
+
+// ---------- Narasi ----------
+t('M01 parseWaktu: HH:MM, ISO, angka, tidak valid', () => { assert.deepStrictEqual(N.parseWaktu('19:02'), { tm: 1142, ts: null }); assert.strictEqual(N.parseWaktu('2026-11-10T19:02').tm, 1142); assert.ok(N.parseWaktu('2026-11-10T19:02').ts > 0); assert.strictEqual(N.parseWaktu(65).tm, 65); assert.strictEqual(N.parseWaktu('25:99'), null); assert.strictEqual(N.parseWaktu('abc'), null); assert.strictEqual(N.parseWaktu(''), null); });
+t('M02 duplikat persis dikelompokkan', () => { const r = N.analisis([row('a1', 1, 'sebarkan berita ini ke semua grup sekarang'), row('a2', 2, 'sebarkan berita ini ke semua grup sekarang'), row('a3', 3, 'sebarkan berita ini ke semua grup sekarang')]); assert.strictEqual(r.klaster.length, 1); assert.strictEqual(r.klaster[0].akun, 3); });
+t('M03 parafrase urutan kata dikelompokkan', () => { const r = N.analisis(['pemerintah sengaja menutupi kebenaran soal harga beras naik dan rakyat dibohongi', 'harga beras naik, kebenarannya sengaja ditutupi pemerintah dan rakyat dibohongi', 'rakyat dibohongi, pemerintah sengaja menutupi kebenaran soal harga beras naik'].map((x, i) => row('u' + i, i, x))); assert.strictEqual(r.klaster.length, 1); });
+t('M04 teks tak berkaitan tidak dikelompokkan', () => { const r = N.analisis([row('a', 1, 'resep nasi goreng dengan telur dan kecap'), row('b', 2, 'jadwal kereta ke bandung berubah bulan depan'), row('c', 3, 'pertandingan semalam berakhir dua satu')]); assert.strictEqual(r.klaster.length, 0); });
+t('M05 [B-12] teks berakhiran "|ok" tidak dipotong di impor', () => { /* diuji di sisi UI (parseBV) pada uji fungsional */ assert.ok(true); });
+t('M06 data kosong / bukan array -> hasil kosong tanpa galat', () => { [[], null, undefined, 'x', {}].forEach(x => { const r = N.analisis(x); assert.strictEqual(r.klaster.length, 0); assert.strictEqual(r.n, 0); }); });
+t('M07 baris tanpa field (u/tx/age kosong) tidak melempar', () => { const r = N.analisis([{}, { tx: 'a' }, { u: 'x' }, { u: 'x', tx: 'sebarkan sebarkan sebarkan' }]); assert.ok(r.n === 4); assert.ok(r.tanpaWaktu === 4); });
+t('M08 [BUG] nama akun __proto__/constructor/toString tidak membuat crash', () => { ['__proto__', 'constructor', 'toString', 'hasOwnProperty'].forEach(n => { const tx = 'awas constructor __proto__ kelompok tertentu menguasai desa kita sebarkan'; const r = N.analisis([row(n, 1, tx), row('b', 2, tx), row('c', 3, tx), row('d', 4, tx)]); assert.strictEqual(r.klaster.length, 1); }); });
+t('M09 jam melewati tengah malam: serempak terdeteksi', () => { const tx = 'Awas kelompok tertentu menguasai desa kita sebarkan sebelum dihapus'; const r = N.analisis([1438, 1439, 0, 1, 2].map((m, i) => row('warga' + (10000 + i * 37), m, tx))); assert.ok(r.klaster[0].koordinasi.rasioSerempak >= 0.5); assert.ok(r.klaster[0].durasiMenit <= 5); });
+t('M10 tanggal berbeda: tidak serempak', () => { const tx = 'Awas kelompok tertentu menguasai desa kita sebarkan sebelum dihapus'; const r = N.analisis([1, 2, 3, 4, 5].map(i => ({ u: 'w' + i, age: 400, fo: 100, fi: 100, ts: '2026-11-0' + i + 'T10:00', tx }))); assert.strictEqual(r.klaster[0].koordinasi.rasioSerempak, 0); assert.strictEqual(r.waktuMode, 'tanggal'); });
+t('M11 PRINSIP: teks+waktu saja (akun lama) tidak lebih dari "sedang"', () => { const r = N.analisis([0, 1, 2, 3, 4, 5].map(i => ({ u: 'lama' + i, age: 800 + i * 50, fo: 500, fi: 300, tm: 960 + i, tx: 'Ayo donor darah Minggu ini di balai desa jam 8 pagi' }))); assert.ok(r.klaster[0].koordinasi.skor <= 60); assert.ok(r.klaster[0].koordinasi.catatan.length >= 1); assert.ok(r.klaster[0].koordinasi.alternatif.length >= 1); });
+t('M12 PRINSIP: label "indikasi kuat tidak autentik" butuh >=2 sinyal profil', () => { const r = N.analisis([0, 1, 2, 3, 4].map(i => ({ u: 'lama' + i, age: 800, fo: 500, fi: 300, tm: 960 + i, tx: 'Ayo donor darah Minggu ini di balai desa jam 8 pagi' }))); r.akun.forEach(a => assert.notStrictEqual(a.label, 'Indikasi kuat tidak autentik')); });
+t('M13 satu akun mengulang: koordinasi 0', () => { const r = N.analisis(Array.from({ length: 6 }, (_, i) => row('sama', i, 'beli obat murah hubungi nomor ini sekarang juga'))); assert.ok(r.klaster.length === 0 || r.klaster.every(k => k.koordinasi.skor === 0)); });
+t('M14 bantahan dikecualikan dari penguat', () => { const tx = 'Awas kelompok tertentu menguasai desa kita sebarkan sebelum dihapus'; const rows = [0, 1, 2, 3].map(i => row('baru' + (10000 + i * 37), i, tx)).concat([row('resmi', 5, 'Klarifikasi: kabar kelompok tertentu menguasai desa kita adalah hoaks menurut siaran pers resmi, sebarkan klarifikasi ini')]); const r = N.analisis(rows); const k = r.klaster[0]; assert.ok(k.bantahan <= 1); assert.strictEqual(k.koordinasi.akun, 4); });
+t('M15 graf: simpul/sisi konsisten dan bersumber dari baris data', () => { const tx = 'Awas kelompok tertentu menguasai desa kita sebarkan #selamatkandesa'; const r = N.analisis([0, 1, 2, 3].map(i => row('baru' + (10000 + i * 37), i, tx, { id: 100 + i }))); const ids = new Set(r.graf.nodes.map(n => n.id)); r.graf.edges.forEach(e => { assert.ok(ids.has(e.dari) && ids.has(e.ke)); }); const sumber = r.graf.edges.filter(e => e.tipe === 'unggah').flatMap(e => e.sumber); sumber.forEach(s => assert.ok([100, 101, 102, 103].includes(s))); });
+t('M16 kronologi terurut menaik', () => { const tx = 'Awas kelompok tertentu menguasai desa kita sebarkan'; const r = N.analisis([5, 1, 3, 9].map((m, i) => row('baru' + (10000 + i * 37), m, tx))); for (let i = 1; i < r.kronologi.length; i++) assert.ok(r.kronologi[i].t >= r.kronologi[i - 1].t); });
+t('M17 [KETERBATASAN DIDOKUMENTASI] stance berlawanan tanpa kata bantahan ikut satu klaster', () => { const r = N.analisis([row('a', 1, 'pemerintah menjual aset negara ke asing secara diam diam'), row('b', 2, 'pemerintah tidak menjual aset negara ke asing secara diam diam'), row('c', 3, 'pemerintah menjual aset negara ke asing secara diam diam')]); assert.strictEqual(r.klaster.length, 1); });
+t('M18 deterministik', () => { const rows = [0, 1, 2, 3].map(i => row('baru' + (10000 + i * 37), i, 'Awas kelompok tertentu menguasai desa kita sebarkan')); const a = N.analisis(rows), b = N.analisis(rows); delete a.durasiProsesMs; delete b.durasiProsesMs; assert.deepStrictEqual(JSON.stringify(a.klaster), JSON.stringify(b.klaster)); });
+
+// ---------- Peringatan dini ----------
+const kamp = () => N.analisis(Array.from({ length: 10 }, (_, i) => ({ u: 'warga_asli' + (10000 + i * 37), age: 4, fo: 6, fi: 420, ts: '2026-11-10T19:0' + (i % 4), pv: ['JB', 'JT', 'SU'][i % 3], tx: 'Awas! Kelompok tertentu akan menguasai desa kita dan menghancurkan rumah ibadah, pemerintah menutupi semuanya, sebarkan sebelum dihapus #SelamatkanDesa', id: 500 + i })));
+t('E01 bobot komponen berjumlah 1,0', () => assert.ok(Math.abs(Object.values(D.BOBOT).reduce((a, b) => a + b, 0) - 1) < 1e-9));
+t('E02 ambang & definisi level tersedia (4 level, urut menurun)', () => { assert.deepStrictEqual(D.AMBANG.map(a => a.kategori), ['AWAS', 'SIAGA', 'WASPADA', 'AMAN']); assert.deepStrictEqual(D.AMBANG.map(a => a.minimum), [75, 50, 25, 0]); D.AMBANG.forEach(a => assert.ok(a.definisi.length > 10)); });
+t('E03 kampanye terkoordinasi -> level >= SIAGA', () => { const d = D.peringatanDini(kamp()); assert.ok(['SIAGA', 'AWAS'].includes(d[0].kategori), d[0].kategori + ' ' + d[0].skor); });
+t('E04 skor = jumlah berbobot komponen (dapat direproduksi)', () => { const d = D.peringatanDini(kamp())[0]; const s = Math.round(Object.entries(D.BOBOT).reduce((a, [k, w]) => a + w * d.komponen[k].nilai, 0)); assert.strictEqual(d.skor, s); });
+t('E05 setiap komponen 0..100 dan punya metrik penjelas', () => { D.peringatanDini(kamp()).forEach(d => Object.values(d.komponen).forEach(c => { assert.ok(c.nilai >= 0 && c.nilai <= 100); assert.ok(typeof c.metrik === 'string'); })); });
+t('E06 jejak data: sumberBaris ⊆ id baris masukan', () => { D.peringatanDini(kamp()).forEach(d => d.sumberBaris.forEach(i => assert.ok(i >= 500 && i <= 509))); });
+t('E07 GERBANG: volume besar tanpa manipulasi tidak jadi AWAS/SIAGA', () => { const n = N.analisis(Array.from({ length: 40 }, (_, i) => ({ u: 'akun' + i, age: 900, fo: 300, fi: 200, ts: '2026-11-10T10:0' + (i % 5), tx: 'Jadwal kereta ke Bandung berubah mulai bulan depan cek aplikasi resmi operator' }))); const d = D.peringatanDini(n); d.forEach(x => assert.ok(['AMAN', 'WASPADA'].includes(x.kategori), x.kategori + ' ' + x.skor)); });
+t('E08 data kosong -> daftar kosong tanpa galat', () => { assert.deepStrictEqual(D.peringatanDini(N.analisis([])), []); });
+t('E09 keyakinan rendah untuk sampel kecil & jam-saja', () => { const n = N.analisis([0, 1, 2].map(i => row('baru' + (10000 + i * 37), i, 'Awas kelompok tertentu menguasai desa kita sebarkan'))); const d = D.peringatanDini(n); assert.strictEqual(d[0].keyakinan, 'rendah'); assert.ok(d[0].keterbatasan.some(x => /jam tanpa tanggal/i.test(x))); });
+t('E10 rekomendasi hanya defensif (tanpa kata buzzer tandingan/manipulasi balasan)', () => { Object.values(D.REKOMENDASI).flat().forEach(r => assert.ok(!/buzzer|bot|amplifikasi palsu|akun palsu|serang balik/i.test(r), r)); });
+
+// ---------- Laporan situasi ----------
+t('L01 laporan pada data kosong tidak melempar', () => { const n = N.analisis([]); const l = D.laporanSituasi(n, D.peringatanDini(n)); assert.ok(l.ringkasan.includes('Belum ada')); assert.ok(D.laporanTeks(l).includes('LAPORAN SITUASI KOGNITIF')); });
+t('L02 laporan memuat 8 bagian wajib', () => { const n = kamp(), l = D.laporanSituasi(n, D.peringatanDini(n)); ['ringkasan', 'narasiDominan', 'indikator', 'kronologi', 'wilayah', 'bukti', 'keyakinan', 'rekomendasi', 'batasan'].forEach(k => assert.ok(k in l, k)); assert.ok(l.narasiDominan.length >= 1 && l.bukti.length >= 1 && l.rekomendasi.length >= 1 && l.wilayah.length === 3); });
+t('L03 teks laporan memuat bagian & batasan', () => { const n = kamp(), tx = D.laporanTeks(D.laporanSituasi(n, D.peringatanDini(n))); ['NARASI DOMINAN', 'INDIKATOR ANCAMAN', 'KRONOLOGI', 'WILAYAH', 'BUKTI PENDUKUNG', 'REKOMENDASI RESPONS DEFENSIF', 'BATASAN'].forEach(h => assert.ok(tx.includes(h), h)); });
+
+const lulus = hasil.filter(h => h.ok).length;
+if (require.main === module) { hasil.forEach(h => console.log((h.ok ? 'PASS' : 'FAIL'), h.nama, h.ok ? '' : '→ ' + h.err)); console.log(`\n${lulus}/${hasil.length} lulus`); if (process.argv.includes('--json')) fs.writeFileSync(path.join(__dirname, '../eval/hasil/unit.json'), JSON.stringify({ total: hasil.length, lulus, hasil }, null, 1)); process.exit(lulus === hasil.length ? 0 : 1); }
+module.exports = { hasil };

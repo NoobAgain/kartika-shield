@@ -1,42 +1,68 @@
-// Analisis konten: penilai pola bahasa, arah/sasaran narasi, tautan cek fakta, hasil, dashboard sesi
-const NARASI_TARGETS=[
-[/\b(?:pemerintah|presiden|menteri|dpr|dprd|aparat|polisi|tni|pemilu|kebijakan|subsidi|bbm|pangan|impor|apbn|korupsi)\b/i,'Pemerintah/Negara','Politik, kebijakan, dan keamanan'],
-[/\b(?:agama|umat|islam|kristen|katolik|hindu|buddha|gereja|masjid|rumah ibadah|kafir|murtad)\b/i,'Kelompok agama','Agama dan identitas'],
-[/\b(?:suku|etnis|ras|cina|china|pribumi|asing|pendatang|warga lokal)\b/i,'Kelompok etnis/warga asing','SARA dan identitas'],
-[/\b(?:vaksin|kesehatan|obat|penyakit|covid|rumah sakit|dokter)\b/i,'Layanan kesehatan','Kesehatan publik'],
-[/\b(?:kpu|paslon|calon|partai|demo|protes)\b/i,'Aktor politik','Politik dan pemilu'],
-[/\b(?:tokoh|ustadz|pendeta|pejabat|gubernur|bupati|wali kota)\b/i,'Tokoh publik','Figur publik'],
-[/\b(?:perusahaan|korporasi|bank|investor|ekonomi|harga|pasar)\b/i,'Ekonomi/korporasi','Ekonomi dan kesejahteraan'],
-[/\b(?:perempuan|anak|lgbt|disabilitas|minoritas)\b/i,'Kelompok rentan','Hak dan kelompok rentan']
-];
-function arahNarasi(t){const s=String(t||''),sasaran=[],isu=[];NARASI_TARGETS.forEach(([re,n,i])=>{if(re.test(s)){sasaran.push(n);if(!isu.includes(i))isu.push(i)}});
-const neg=/(gagal|korupsi|jual|khianat|bohong|tipu|menipu|hancur|rusak|ancam|serbu|bantai|musnah|kafir|hina|benci|palsu|hoaks|konspirasi|ditutupi|menutupi|menyembunyikan|dijajah)/i.test(s),pos=/(dukung|mendukung|apresiasi|terima kasih|bantu|gotong royong|damai|rukun|bersatu|bangga)/i.test(s);
-return{sasaran:sasaran.length?sasaran:['Tidak spesifik'],isu:isu.join('; ')||'Tidak spesifik',arah:neg&&pos?'Kontradiktif':neg?'Menyerang/mendiskreditkan':pos?'Mendukung/menguatkan':'Netral/tidak jelas',emosi:/(takut|ancam|waspada|awas|bahaya|panik)/i.test(s)?'Takut/ancaman':/(marah|geram|benci|hina)/i.test(s)?'Marah/permusuhan':/(sedih|prihatin|kasihan)/i.test(s)?'Prihatin':'Netral'}}
-function heur(t){let s=0,f=[],tk=[],sara=false,kw=/\b(?:agama|suku|etnis|cina|china|kafir|pribumi|asing|aseng|rumah ibadah|gereja|masjid|komunis|antek)\b/i.test(t);
-const r=[[/!{2,}|\b[A-Z]{5,}\b\s+\b[A-Z]{3,}\b/,15,"Huruf kapital atau tanda seru berlebihan","Provokasi emosional"],[/\b(?:sebarkan|share|viral|forward|sebelum dihapus)\b/i,20,"Desakan menyebarkan segera","Urgensi palsu"],[/(media tidak berani|ditutupi|disembunyikan|konspirasi)/i,20,"Klaim penyembunyian oleh pihak berkuasa","Teori konspirasi"],[/(menguasai|menghancurkan|musnah|serbu|bantai)/i,20,"Bahasa ancaman terhadap kelompok","Framing ancaman identitas"]];
-r.forEach(([x,p,a,b])=>{if(x.test(t)){s+=p;f.push(a);tk.push(b)}});sara=kw&&f.length>0;if(sara){s+=20;tk.push("Eksploitasi isu SARA")}
-if(!/(https?:\/\/|menurut|dikutip|sumber)/i.test(t)){s+=10;f.push("Tidak mencantumkan sumber yang dapat dicek")}
-s=Math.min(s,95);const ar=arahNarasi(t);return{verdict:s>=65?"RISIKO TINGGI":s>=45?"RISIKO SEDANG":s>=20?"PERLU DIVERIFIKASI":"RISIKO RENDAH",risk:s,sara,ringkasan:"Analisis pola bahasa dan teknik manipulasi.",tanda:f,teknik:tk,narasi_tandingan:"Mari cek dulu ke sumber resmi sebelum membagikan. Keberagaman kita kekuatan, bukan ancaman.",tabayyun:["Cari berita yang sama di media kredibel","Periksa tanggal dan lokasi kejadian","Cek ke turnbackhoax.id atau cekfakta.com"],sasaran:ar.sasaran,arah:ar.arah,isu:ar.isu,emosi:ar.emosi}}
-async function analyze(t){if(sample){try{const r=await sample.json(`Anda analis disinformasi untuk Indonesia (konteks proxy war informasi dan SARA). Analisis teks berikut berdasarkan pola bahasa, teknik manipulasi, dan klaim yang dapat diverifikasi. Jangan mengaku sudah memverifikasi fakta real-time; sebutkan apa yang perlu dicek. Balas HANYA JSON dengan kunci: verdict (salah satu: "RISIKO TINGGI","RISIKO SEDANG","PERLU DIVERIFIKASI","RISIKO RENDAH"; ini penilaian risiko manipulasi dari pola bahasa, BUKAN vonis benar atau salah), risk (0-100), sara (boolean), ringkasan (1-2 kalimat), tanda (array string), teknik (array, mis. urgensi palsu, framing ancaman identitas, konspirasi, deepfake, buzzer), sasaran (array string kelompok/lembaga yang diserang atau dibela), arah (string: Menyerang/mendiskreditkan, Mendukung/menguatkan, Kontradiktif, atau Netral/tidak jelas), isu (string), emosi (string), narasi_tandingan (balasan singkat yang sejuk berbasis toleransi, keharmonisan, gotong royong), tabayyun (array 3 langkah verifikasi konkret). Bahasa Indonesia.\n\nTEKS:\n"""${t}"""`);const ar=arahNarasi(t);if(!Array.isArray(r.sasaran)||!r.sasaran.length)r.sasaran=ar.sasaran;['arah','isu','emosi'].forEach(k=>{if(!r[k])r[k]=ar[k]});return r}catch(e){if(e&&e.code==="rate_limited")throw e}}return heur(t)}
-$("#go").onclick=async()=>{const t=$("#inp").value.trim();if(!t)return;const b=$("#go");b.disabled=true;b.textContent="Menganalisis…";
-try{const r=await analyze(t);r.risk=Math.max(0,Math.min(100,+r.risk||0));r.verdict=NV[r.verdict]||r.verdict;curT=t;hist.push({v:r.verdict,r:r.risk,s:!!r.sara,t:(r.teknik||[]).slice(0,5),a:(r.sasaran||[]).join(', '),dir:r.arah||'',i:r.isu||'',d:Date.now()});save();show(r);kReal(t,r);lastH={t,r}}
-catch(e){$("#res").innerHTML='<div class="card">Gagal menganalisis. Coba lagi sebentar.</div>'}b.disabled=false;b.textContent="Analisis"};
-function fcLinks(t){const q=encodeURIComponent((t||"").replace(/https?:\/\/\S+/g," ").replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(Boolean).slice(0,12).join(" "));
-const S=[["turnbackhoax.id","turnbackhoax.id"],["cekfakta.com","cekfakta.com"],["komdigi.go.id","Komdigi (hoaks)"]];
-return'<p class="note">Tautan membuka pencarian di situs cek fakta. Ada atau tidaknya hasil bukan penentu benar atau salah. Selalu baca laporan aslinya.</p><div class="row" style="margin-top:0">'+S.map(([d,n])=>'<a class="btn alt" style="text-decoration:none" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=site%3A'+d+'+'+q+'">Cari di '+n+'</a>').join("")+'</div>'}
-function show(r){const c=COL[r.verdict]||"#a16207",L=a=>(a&&a.length)?"<ul>"+a.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>":"<p class='note'>Tidak ada.</p>",dsn=typeof disarmText==='function'?disarmText(curT):[];
-$("#res").innerHTML=`<div class="card"><div class="verdict"><span class="badge" style="background:${c}">${esc(r.verdict)}</span><div class="meter"><i style="width:${r.risk}%;background:${c}"></i></div><b>Risiko ${r.risk}/100</b></div>
-${r.sara?'<p><span class="chip" style="border-color:'+c+'">⚠ Berpotensi memecah belah SARA</span></p>':""}<p class="note" style="margin:6px 0">Penilaian pola bahasa dan teknik manipulasi, bukan pemeriksaan fakta.</p><p>${esc(r.ringkasan)}</p>
-<div class=bti><b>Arah narasi:</b> ${esc(r.arah||'Netral/tidak jelas')}<br><b>Sasaran:</b> ${esc((r.sasaran||[]).join(', ')||'Tidak spesifik')}<br><b>Isu:</b> ${esc(r.isu||'-')} · <b>Emosi:</b> ${esc(r.emosi||'Netral')}</div>
+// Analisis Konten: antarmuka untuk Cognitive Threat Analysis (js/00a-kognitif-teks.js), tautan cek fakta, dashboard sesi.
+let lastH=null;
+// Seluruh penilaian berbasis aturan yang transparan; tidak ada AI dan teks tidak dikirim ke server.
+const heur = t => KS.teks.analisis(t);
+const arahNarasi = t => { const a = KS.teks.analisis(t); return { sasaran: a.sasaran, isu: a.isu, arah: a.arah, emosi: a.emosi }; };
+async function analyze(t) { return heur(t); }
+
+$("#go").onclick = async () => {
+  const t = $("#inp").value.trim(); if (!t) return;
+  const b = $("#go"); b.disabled = true; b.textContent = "Menganalisis…";
+  try {
+    const r = await analyze(t);
+    r.risk = Math.max(0, Math.min(100, +r.risk || 0)); r.verdict = NV[r.verdict] || r.verdict; curT = t;
+    const c = {}; Object.entries(r.kategori || {}).forEach(([k, v]) => { if (v.skor > 0) c[k] = v.skor; });
+    const cid = ksBuatCaseId(), kc = kCity(t);
+    hist.push({ v: r.verdict, r: r.risk, s: !!r.sara, t: (r.teknik || []).slice(0, 5), a: (r.sasaran || []).join(', '), dir: r.arah || '', i: r.isu || '', c, d: Date.now(), id: cid });
+    if (hist.length > 2000) hist = hist.slice(-2000);
+    // Skor aturan (r.risk) tidak diubah; n8n dipanggil terpisah dan gagal dengan tenang (mode offline).
+    const ind = (r.teknik || []).concat(Object.keys(c).map(k => (KS.teks.KATEGORI[k] || { nama: k }).nama));
+    const g = await analisisGabungan({ id: cid, text: t, ruleScore: r.risk, indicators: ind, source: 'Analisis Konten', region: kc ? kc[1] : '' });
+    save(); show(r, g); kReal(t, r); lastH = { t, r };
+  } catch (e) { $("#res").innerHTML = '<div class="card">Gagal menganalisis. Coba lagi sebentar.</div>'; }
+  b.disabled = false; b.textContent = "Analisis";
+};
+
+function fcLinks(t) {
+  const q = encodeURIComponent((t || "").replace(/https?:\/\/\S+/g, " ").replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean).slice(0, 12).join(" "));
+  const S = [["turnbackhoax.id", "turnbackhoax.id"], ["cekfakta.com", "cekfakta.com"], ["komdigi.go.id", "Komdigi (hoaks)"]];
+  return '<p class="note">Tautan membuka pencarian di situs cek fakta. Ada atau tidaknya hasil bukan penentu benar atau salah. Selalu baca laporan aslinya.</p><div class="row" style="margin-top:0">' +
+    S.map(([d, n]) => '<a class="btn alt" style="text-decoration:none" target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?q=site%3A' + d + '+' + q + '">Cari di ' + n + '</a>').join("") + '</div>';
+}
+
+const KONTEKS_LABEL = { netral: 'Netral', bantahan_bersumber: 'Bantahan/klarifikasi bersumber (skor diturunkan)', kemungkinan_bantahan: 'Kemungkinan bantahan tanpa sumber (skor diturunkan separuh)', tidak_ada_teks: 'Tidak ada teks' };
+function kategoriBars(kat) {
+  return Object.entries(kat || {}).map(([k, v]) => {
+    const meta = KS.teks.KATEGORI[k] || { nama: k, def: '' };
+    return `<div class="bar" title="${esc(meta.def)}"><span style="width:190px">${esc(meta.nama)}</span><i style="width:${Math.max(2, v.skor / v.maks * 120)}px;background:${v.skor ? 'var(--gr)' : '#ddd'}"></i>${v.skor}/${v.maks}</div>`;
+  }).join("");
+}
+function show(r, g) {
+  const c = COL[r.verdict] || "#a16207", L = a => (a && a.length) ? "<ul>" + a.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul>" : "<p class='note'>Tidak ada.</p>",
+    dsn = typeof disarmText === 'function' ? disarmText(curT) : [];
+  const bukti = (r.bukti || []).slice(0, 12).map(b => `<li><b>${esc(b.indikator)}</b> ${esc(b.nama)}: <code>${esc(b.kutipan)}</code> <span class="note">…${esc(b.konteks)}…</span></li>`).join("");
+  $("#res").innerHTML = `<div class="card"><div class="verdict"><span class="badge" style="background:${c}">${esc(r.verdict)}</span><div class="meter"><i style="width:${r.risk}%;background:${c}"></i></div><b>Risiko ${r.risk}/100</b></div>
+${r.sara ? '<p><span class="chip" style="border-color:' + c + '">⚠ Indikasi isu SARA bersama pola manipulasi</span></p>' : ""}${r.lantai ? '<p><span class="chip" style="border-color:' + c + '">⚠ Aturan lantai: indikasi dehumanisasi/kekerasan terhadap kelompok</span></p>' : ""}
+${ksPanelHtml(g)}<p class="note" style="margin:6px 0">Penilaian pola bahasa dan teknik manipulasi, bukan pemeriksaan fakta.</p><p>${esc(r.ringkasan)}</p>
+<div class=bti><b>Tingkat keyakinan:</b> ${esc(r.keyakinan || '-')} · <b>Konteks:</b> ${esc(KONTEKS_LABEL[r.konteks] || r.konteks || '-')}<br><b>Arah narasi:</b> ${esc(r.arah || 'Netral/tidak jelas')}<br><b>Sasaran:</b> ${esc((r.sasaran || []).join(', ') || 'Tidak spesifik')}<br><b>Isu:</b> ${esc(r.isu || '-')} · <b>Emosi:</b> ${esc(r.emosi || 'Netral')}</div>
 <p class=note>Arah dan sasaran adalah perkiraan dari pola bahasa, bukan penilaian benar/salah atau niat pelaku.</p>
-<h3>Tanda mencurigakan</h3>${L(r.tanda)}<h3>Teknik manipulasi</h3>${(r.teknik||[]).map(x=>'<span class="chip">'+esc(x)+'</span>').join("")||"-"}
-<h3>Pemetaan DISARM</h3>${dsn.length?dsn.map(d=>`<span class="chip" title="${esc(d.name)} · ${esc(DISARM_TACTICS[d.tactic]||d.tactic)}">${esc(d.id)} · ${esc(d.short)}</span>`).join(""):"-"}<p class=note>Rujukan DISARM Red Framework (DISARM Foundation, CC BY-SA 4.0). Indikasi berbasis aturan, bukan atribusi resmi.</p>
+<h3>Indikator kognitif (8 kategori)</h3>${kategoriBars(r.kategori)}
+<h3>Bukti (kutipan teks ternormalisasi)</h3>${bukti ? '<ul>' + bukti + '</ul>' : "<p class='note'>Tidak ada indikator yang cocok.</p>"}
+<h3>Tanda mencurigakan</h3>${L(r.tanda)}<h3>Teknik manipulasi</h3>${(r.teknik || []).map(x => '<span class="chip">' + esc(x) + '</span>').join("") || "-"}
+<h3>Pemetaan DISARM</h3>${dsn.length ? dsn.map(d => `<span class="chip" title="${esc(d.name)} · ${esc(DISARM_TACTICS[d.tactic] || d.tactic)}">${esc(d.id)} · ${esc(d.short)}</span>`).join("") : "-"}<p class=note>Rujukan DISARM Red Framework (DISARM Foundation, CC BY-SA 4.0). Isyarat berbasis aturan, bukan atribusi resmi.</p>
+<details><summary><b>Metode penilaian &amp; keterbatasan</b></summary><p class=note>${esc(r.metode || '')}</p>${L(r.keterbatasan)}</details>
 <h3>Langkah tabayyun</h3>${L(r.tabayyun)}<h3>Cari rujukan cek fakta</h3>${fcLinks(curT)}<h3>Narasi tandingan (nilai Bhinneka)</h3><div class="bti">${esc(r.narasi_tandingan)}</div>
 <div class="row"><button class="btn alt" id="cp">Salin narasi tandingan</button></div></div>`;
-$("#cp").onclick=()=>{try{navigator.clipboard.writeText(r.narasi_tandingan);$("#cp").textContent="Tersalin"}catch(e){}}}
-function dash(){const n=hist.length;if(!n){$("#dash").innerHTML="<p>Belum ada analisis. Buka Analisis Konten untuk memulai.</p>";return}
-const cnt={};hist.forEach(h=>cnt[h.v]=(cnt[h.v]||0)+1);const tk={};hist.forEach(h=>(h.t||[]).forEach(x=>tk[x]=(tk[x]||0)+1));
-const avg=Math.round(hist.reduce((a,h)=>a+h.r,0)/n),sa=hist.filter(h=>h.s).length;
-const bars=(o,col)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>`<div class="bar"><span style="width:150px">${esc(k)}</span><i style="width:${v/n*180+4}px;background:${col?col(k):"var(--gr)"}"></i>${v}</div>`).join("");
-$("#dash").innerHTML=`<div class="grid"><div class="stat"><b>${n}</b>Konten dianalisis</div><div class="stat"><b>${avg}</b>Rata-rata risiko</div><div class="stat"><b>${sa}</b>Terindikasi SARA</div></div><h3>Sebaran status</h3>${bars(cnt,k=>COL[k]||"#999")}<h3>Teknik manipulasi terbanyak</h3>${bars(tk)||"-"}`}
-$("#rst").onclick=()=>{hist=[];save();dash()};
+  $("#cp").onclick = () => { try { navigator.clipboard.writeText(r.narasi_tandingan); $("#cp").textContent = "Tersalin" } catch (e) { } };
+}
+
+function dash() {
+  const n = hist.length; if (!n) { $("#dash").innerHTML = "<p>Belum ada analisis. Buka Analisis Konten untuk memulai.</p>"; return }
+  const cnt = Object.create(null); hist.forEach(h => cnt[h.v] = (cnt[h.v] || 0) + 1);
+  const tk = Object.create(null); hist.forEach(h => (Array.isArray(h.t) ? h.t : []).forEach(x => tk[x] = (tk[x] || 0) + 1));
+  const kg = Object.create(null); hist.forEach(h => Object.keys(h.c || {}).forEach(k => { const nm = (KS.teks.KATEGORI[k] || { nama: k }).nama; kg[nm] = (kg[nm] || 0) + 1; }));
+  const avg = Math.round(hist.reduce((a, h) => a + h.r, 0) / n), sa = hist.filter(h => h.s).length;
+  const bars = (o, col) => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `<div class="bar"><span style="width:190px">${esc(k)}</span><i style="width:${v / n * 180 + 4}px;background:${col ? col(k) : "var(--gr)"}"></i>${v}</div>`).join("");
+  $("#dash").innerHTML = `<div class="grid"><div class="stat"><b>${n}</b>Konten dianalisis</div><div class="stat"><b>${avg}</b>Rata-rata risiko</div><div class="stat"><b>${sa}</b>Terindikasi SARA</div></div><h3>Sebaran status</h3>${bars(cnt, k => COL[k] || "#999")}<h3>Kategori indikator kognitif (jumlah konten yang memuatnya)</h3>${bars(kg) || "-"}<h3>Teknik manipulasi terbanyak</h3>${bars(tk) || "-"}<p class=note>Setiap angka berasal dari riwayat analisis di peramban ini (Analisis Konten).</p>`;
+}
+$("#rst").onclick = () => { hist = []; save(); dash() };

@@ -1,5 +1,14 @@
 # Kartika Shield
 
+## Kartika Shield, Cognitive Warfare Intelligence & Early Warning System (v2.0)
+Versi ini menambahkan analisis Cognitive Warfare ke aplikasi lama tanpa AI:
+- **Cognitive Threat Analysis** (`js/00a-kognitif-teks.js`): 8 kategori teknik manipulasi, bukti kutipan, metode dan keterbatasan pada tiap hasil (jendela Analisis).
+- **Narrative & Influence Mapping** (`js/00b-kognitif-narasi.js`): klaster narasi, kronologi, indikator koordinasi berlapis, graf akun-narasi-tagar (jendela Buzzer).
+- **Cognitive Threat Early Warning** (`js/00c-kognitif-dini.js`): skor komposit 6 komponen dengan gerbang level AWAS/SIAGA/WASPADA/AMAN (jendela Buzzer dan Peta Dini).
+- **Cognitive Situation Report**: bagian 2a pada Laporan Komando (HTML, teks, JSON, CSV, cetak).
+Dokumen: `INSTALLATION.md`, `USAGE.md`, `ARCHITECTURE.md`, `API.md`, `TEST_REPORT.md`, `CHANGELOG.md`, `AUDIT_BASELINE.md`. Data contoh bersifat **SIMULASI** (`eval/`).
+Folder `AUTO IG` (bot komentar/like Instagram dengan anti-deteksi) **tidak disertakan**: bertentangan dengan misi (lihat CHANGELOG.md).
+
 Dasbor anti disinformasi (Cognitive Domain) berbasis nilai Bhinneka Tunggal Ika, dengan kolektor data opsional. Analisis mencakup indikator risiko, arah/sasaran narasi, pemetaan DISARM, klaster buzzer, peringatan dini wilayah, dan laporan komando.
 
 Penilaian adalah **indikator pola bahasa dan perilaku, bukan putusan benar atau salah**. Hanya cek fakta resmi yang dapat menyatakan sebuah klaim hoaks.
@@ -13,6 +22,10 @@ data/               data statis (batas provinsi, lambang, peta dunia)
 collector/          kolektor Bluesky/RSS + bot pencarian otomatis (Node.js >= 22, tanpa dependensi)
 tools/build.js      menggabungkan semuanya menjadi satu berkas
 dist/               hasil build, kartika-shield.html (berkas tunggal mandiri)
+vendor/             d3 dan topojson-client lokal (ISC), tanpa CDN
+js/00a-00c          mesin kognitif bersama (teks, narasi, peringatan dini)
+tests/ eval/        uji otomatis, dataset (SIMULASI), hasil uji
+docs/               diagram arsitektur, evaluasi, laporan audit sebelumnya
 ```
 
 ## Menjalankan dasbor
@@ -20,7 +33,7 @@ dist/               hasil build, kartika-shield.html (berkas tunggal mandiri)
 - **GitHub Pages / Vercel**: unggah repositori apa adanya, `index.html` di akar.
 - **Membuat ulang berkas tunggal** setelah mengubah kode: `node tools/build.js`
 
-Tidak ada langkah instal. Pustaka d3 dan topojson dimuat dari CDN, jadi butuh internet saat pertama kali dibuka.
+Tidak ada langkah instal. Pustaka d3 dan topojson sudah disertakan di `vendor/` (tanpa CDN), sehingga aplikasi berjalan offline.
 
 Tampilan utama adalah **Peta Dunia Live**. Jendela Analisis, Buzzer, Feed, Peta Dini, **Laporan Komando**, Dashboard, dan Data dibuka dari dock di bagian atas peta.
 
@@ -106,7 +119,7 @@ Pencarian video memakai 100 unit per kata kunci, sedangkan mengambil komentar da
 - Kolektor tidak menulis ke disk kecuali `LOG_CSV` diisi. Akun ditampilkan sebagai hash 8 karakter.
 - Cakupan sumber hanya Bluesky dan RSS/Google News. Platform lain tidak punya aliran publik atau berbayar.
 - Skor berbasis aturan bahasa bisa salah tandai dan mudah dihindari. Selalu tinjau manual dan rujuk cek fakta (tautan tersedia di hasil Analisis).
-- Mode AI (Analisis dan Bot) hanya aktif di lingkungan yang menyediakannya. Di tempat lain dasbor memakai mode offline.
+- Tidak ada komponen AI. Semua analisis berbasis aturan, statistik, kemiripan teks, dan analisis graf yang transparan dan dapat diuji (lihat ARCHITECTURE.md).
 
 Atribusi data dan lambang: lihat `THIRD_PARTY.md`.
 
@@ -133,7 +146,7 @@ Jendela **Data** di dock mengelola semua data aplikasi (riwayat analisis, lapora
 - **Deteksi duplikat**: record identik dihitung dan dapat dihapus.
 - **Validasi CSV Buzzer**: baris dengan kolom kurang, angka bukan bulat, jam bukan HH:MM, atau teks kosong ditolak dengan nomor baris dan alasan. Duplikat persis dibuang, kode provinsi tak dikenal dikosongkan, maksimum 5000 baris dan 5 MB. Tersedia tombol *Pakai data bersih* dan *Unduh baris ditolak*.
 
-Uji internal: tombol **Uji akurasi** di jendela Buzzer (18 akun sintetis berlabel). Lihat `docs/EVALUASI.md` untuk metode dan keterbatasannya.
+Uji internal: tombol **Validasi model** di jendela Buzzer (18 akun sintetis berlabel, sirkular). Pengujian menyeluruh ada di TEST_REPORT.md. Lihat `docs/EVALUASI.md` untuk metode dan keterbatasannya.
 
 ## Bot Facebook (Halaman yang Anda kelola)
 

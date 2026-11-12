@@ -1,0 +1,104 @@
+{
+ "target": "index.html",
+ "total": 19,
+ "lulus": 17,
+ "hasil": [
+  {
+   "nama": "S01 XSS: teks Analisis Konten (6 payload) tidak dieksekusi dan di-escape",
+   "ok": true,
+   "s": 10.25
+  },
+  {
+   "nama": "S02 XSS: CSV Buzzer (akun, teks, tagar, kode) -> hasil, graf, tabel, laporan",
+   "ok": true,
+   "s": 16.19
+  },
+  {
+   "nama": "S03 XSS: Peta Dini manual + Laporan Komando (judul, PIC, catatan) + jendela cetak",
+   "ok": true,
+   "s": 2.13
+  },
+  {
+   "nama": "S04 XSS: pemulihan cadangan berisi payload & kunci prototipe -> tidak dieksekusi, tidak mencemari Object.prototype",
+   "ok": true,
+   "s": 8.26
+  },
+  {
+   "nama": "S05 CSP: koneksi keluar ke domain eksternal diblokir; tidak ada permintaan jaringan selama alur penuh",
+   "ok": false,
+   "s": 4.96,
+   "err": "['https://adamsmaulanaa.app.n8n.cloud/webhook/kartika-shield-analyze']"
+  },
+  {
+   "nama": "S06 injeksi rumus CSV: sel berawalan = + - @ dinetralkan di semua ekspor CSV",
+   "ok": true,
+   "s": 3.72
+  },
+  {
+   "nama": "S07 DoS: CSV 30.000 baris dipotong ke batas dan selesai < 25 dtk; baris 100 KB dipotong",
+   "ok": true,
+   "s": 27.52
+  },
+  {
+   "nama": "S08 kunci berbahaya (__proto__/constructor) sebagai akun/teks tidak merusak UI",
+   "ok": true,
+   "s": 8.05
+  },
+  {
+   "nama": "S09 kolektor: /stats 200 JSON; /events text/event-stream",
+   "ok": true,
+   "s": 0.01
+  },
+  {
+   "nama": "S10 kolektor: Host asing ditolak (anti DNS rebinding)",
+   "ok": true,
+   "s": 0.0
+  },
+  {
+   "nama": "S11 kolektor: POST dari Origin asing / tanpa JSON ditolak (anti CSRF); Origin asing tidak mendapat header CORS",
+   "ok": true,
+   "s": 0.0
+  },
+  {
+   "nama": "S12 kolektor: path traversal & path tak dikenal -> 404 (tidak ada berkas statis)",
+   "ok": true,
+   "s": 0.0
+  },
+  {
+   "nama": "S13 kolektor: body > 64 KB -> 413; JSON rusak -> 400; metode PUT/DELETE tidak mengubah status",
+   "ok": true,
+   "s": 0.0
+  },
+  {
+   "nama": "S14 kolektor: batas klien SSE (MAX_CLIENTS=3) -> klien ke-4 ditolak 503",
+   "ok": true,
+   "s": 0.0
+  },
+  {
+   "nama": "S15 kolektor: konfigurasi bot tervalidasi (interval dibatasi 1..120, kata kunci dibatasi)",
+   "ok": true,
+   "s": 0.0
+  },
+  {
+   "nama": "S16 pemindaian rahasia: tidak ada kunci/token/PEM tertanam pada kode & data (selain gambar base64)",
+   "ok": true,
+   "s": 0.03
+  },
+  {
+   "nama": "S17 tanpa komponen AI: tak ada pustaka/endpoint/objek AI pada kode aplikasi (js, collector, index.html)",
+   "ok": false,
+   "s": 0.02,
+   "err": "[('n8n-bridge.js', 'Gemini'), ('n8n-bridge.js', 'Gemini')]"
+  },
+  {
+   "nama": "S18 tanpa otomasi interaksi media sosial / anti-deteksi: tak ada puppeteer/stealth/login/komentar-otomatis pada paket",
+   "ok": true,
+   "s": 0.04
+  },
+  {
+   "nama": "S19 kolektor tidak memakai dependensi pihak ketiga (package.json bersih) dan pustaka klien memakai berkas lokal (vendor/)",
+   "ok": true,
+   "s": 0.0
+  }
+ ]
+}

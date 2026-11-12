@@ -61,8 +61,9 @@ async function api(path, params, biaya) {
   throw new Error(path + ' gagal berulang kali');
 }
 
+const SALT = process.env.ANON_SALT || crypto.randomBytes(16).toString('hex');
 const hashAkun = (id, nama) => {
-  const h = crypto.createHash('sha256').update(id).digest('hex').slice(0, 8);
+  const h = crypto.createHmac('sha256', SALT).update(id).digest('hex').slice(0, 8);
   const huruf = [...h].map(c => String.fromCharCode(97 + parseInt(c, 16))).join('');
   const ekor = (String(nama).replace(/^@/, '').match(/\d{4,}$/) || [''])[0];
   return 'akun_' + huruf + ekor;

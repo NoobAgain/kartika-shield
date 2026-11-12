@@ -1,13 +1,17 @@
 {
   "name": "kartika-shield",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Dasbor anti disinformasi Kartika Shield dan kolektor datanya",
+  "description": "Kartika Shield, Cognitive Warfare Intelligence & Early Warning System (web dashboard, tanpa AI)",
   "scripts": {
     "build": "node tools/build.js",
     "collector": "node collector/server.js",
     "buzzer": "node collector/ambil-buzzer.js",
-    "youtube": "node collector/ambil-youtube.js"
+    "youtube": "node collector/ambil-youtube.js",
+    "test:unit": "node tests/unit_engine.js",
+    "test": "sh tests/run_all.sh"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22"
+  }
 }

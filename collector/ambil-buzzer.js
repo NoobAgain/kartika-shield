@@ -60,8 +60,9 @@ async function masuk() {
   catch (e) { if (e.status === 401 || e.status === 400) gagal('login ditolak. Periksa handle dan App Password.'); throw e; }
 }
 
+const SALT = process.env.ANON_SALT || crypto.randomBytes(16).toString('hex');
 const hashAkun = (did, handle) => {
-  const h = crypto.createHash('sha256').update(did).digest('hex').slice(0, 8);
+  const h = crypto.createHmac('sha256', SALT).update(did).digest('hex').slice(0, 8);
   const huruf = [...h].map(c => String.fromCharCode(97 + parseInt(c, 16))).join('');   // huruf saja agar tidak memicu aturan "angka acak" secara palsu
   const ekor = (handle.split('.')[0].match(/\d{4,}$/) || [''])[0];                    // pola angka di akhir nama tetap dipertahankan (sinyal bot yang sah)
   return 'akun_' + huruf + ekor;
@@ -77,7 +78,7 @@ async function cari(token, sejak, seen) {
       const r = await api('app.bsky.feed.searchPosts', p, token);
       for (const x of r.posts || []) {
         if (seen.has(x.uri) || !x.record || !x.record.text) continue;
-        seen.add(x.uri); out.push(x);
+        seen.add(x.uri); if (seen.size > 50000) seen.delete(seen.values().next().value); out.push(x);
       }
       cursor = r.cursor; if (!cursor || !(r.posts || []).length) break;
     }

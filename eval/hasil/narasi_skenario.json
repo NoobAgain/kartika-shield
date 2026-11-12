@@ -1,0 +1,158 @@
+{
+ "skenario": 10,
+ "lulus": 10,
+ "pasangan": {
+  "TP": 200,
+  "FP": 0,
+  "FN": 0,
+  "precision": 1,
+  "recall": 1,
+  "f1": 1
+ },
+ "rincian": [
+  {
+   "nama": "S1 kampanye akun baru serempak",
+   "lulus": true,
+   "cek": [
+    [
+     "koordinasi 90 dalam [75,100]",
+     true
+    ],
+    [
+     "pasangan klaster tp=28 fp=0 fn=0",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S2 organik berita bersama akun lama",
+   "lulus": true,
+   "cek": [
+    [
+     "koordinasi 20 dalam [0,24]",
+     true
+    ],
+    [
+     "pasangan klaster tp=28 fp=0 fn=0",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S3 relawan donor darah teks sama serempak",
+   "lulus": true,
+   "cek": [
+    [
+     "koordinasi 35 dalam [0,49]",
+     true
+    ],
+    [
+     "pasangan klaster tp=6 fp=0 fn=0",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S4 kampanye parafrase urutan kata",
+   "lulus": true,
+   "cek": [
+    [
+     "koordinasi 75 dalam [50,100]",
+     true
+    ],
+    [
+     "pasangan klaster tp=15 fp=0 fn=0",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S5 satu akun mengulang 10x",
+   "lulus": true,
+   "cek": [
+    [
+     "koordinasi 0 dalam [0,24]",
+     true
+    ],
+    [
+     "pasangan klaster tp=45 fp=0 fn=0",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S6 5 penguat + 3 bantahan (klaster terpisah)",
+   "lulus": true,
+   "cek": [
+    [
+     "klaster 0 koordinasi 90 dalam [50,100]",
+     true
+    ],
+    [
+     "klaster 1 koordinasi 0 dalam [0,0]",
+     true
+    ],
+    [
+     "klaster 1 bantahan terdeteksi 3 = 3",
+     true
+    ],
+    [
+     "pasangan klaster tp=13 fp=0 fn=0",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S7 serempak melewati tengah malam",
+   "lulus": true,
+   "cek": [
+    [
+     "koordinasi 90 dalam [75,100]",
+     true
+    ],
+    [
+     "rasio serempak 1",
+     true
+    ],
+    [
+     "pasangan klaster tp=10 fp=0 fn=0",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S8 teks sama di 5 hari berbeda",
+   "lulus": true,
+   "cek": [
+    [
+     "koordinasi 70 dalam [0,74]",
+     true
+    ],
+    [
+     "pasangan klaster tp=10 fp=0 fn=0",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S9 50 teks tak berkaitan",
+   "lulus": true,
+   "cek": [
+    [
+     "tidak ada klaster (0)",
+     true
+    ]
+   ]
+  },
+  {
+   "nama": "S10 3 kampanye + 100 noise",
+   "lulus": true,
+   "cek": [
+    [
+     "pasangan tp=45 fp=0 fn=0",
+     true
+    ]
+   ]
+  }
+ ]
+}

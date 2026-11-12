@@ -1,0 +1,169 @@
+{
+ "pageerrors_on_load": [],
+ "external_requests_blocked": [],
+ "nav_window_visible": {
+  "a": true,
+  "b": true,
+  "f": true,
+  "m": true,
+  "r": true,
+  "d": true,
+  "x": true
+ },
+ "pageerrors_after_nav": [],
+ "claude_global_defined": "undefined",
+ "sample_defined": false,
+ "heur_cases": {
+  "viral_contoh": {
+   "v": "RISIKO TINGGI",
+   "risk": 95,
+   "sara": true,
+   "teknik": [
+    "Provokasi emosional",
+    "Urgensi palsu",
+    "Teori konspirasi",
+    "Framing ancaman identitas",
+    "Eksploitasi isu SARA"
+   ],
+   "arah": "Menyerang/mendiskreditkan",
+   "disarm": [
+    "T0016",
+    "T0022",
+    "T0075.001",
+    "T0079",
+    "T0083"
+   ]
+  },
+  "donor_darah": {
+   "v": "RISIKO SEDANG",
+   "risk": 45,
+   "sara": false,
+   "teknik": [
+    "Provokasi emosional",
+    "Urgensi palsu"
+   ],
+   "arah": "Netral/tidak jelas",
+   "disarm": [
+    "T0016"
+   ]
+  },
+  "bantahan": {
+   "v": "RISIKO RENDAH",
+   "risk": 0,
+   "sara": false,
+   "teknik": [],
+   "arah": "Menyerang/mendiskreditkan",
+   "disarm": [
+    "T0022",
+    "T0075.001"
+   ]
+  },
+  "netral": {
+   "v": "RISIKO RENDAH",
+   "risk": 10,
+   "sara": false,
+   "teknik": [],
+   "arah": "Netral/tidak jelas",
+   "disarm": []
+  },
+  "kebencian": {
+   "v": "RISIKO RENDAH",
+   "risk": 10,
+   "sara": false,
+   "teknik": [],
+   "arah": "Netral/tidak jelas",
+   "disarm": [
+    "T0140.003"
+   ]
+  },
+  "evasi_spasi": {
+   "v": "RISIKO SEDANG",
+   "risk": 50,
+   "sara": false,
+   "teknik": [
+    "Urgensi palsu",
+    "Teori konspirasi"
+   ],
+   "arah": "Menyerang/mendiskreditkan",
+   "disarm": [
+    "T0016",
+    "T0022",
+    "T0075.001"
+   ]
+  },
+  "evasi_leet": {
+   "v": "RISIKO RENDAH",
+   "risk": 10,
+   "sara": false,
+   "teknik": [],
+   "arah": "Menyerang/mendiskreditkan",
+   "disarm": [
+    "T0022",
+    "T0075.001"
+   ]
+  },
+  "clickbait": {
+   "v": "PERLU DIVERIFIKASI",
+   "risk": 30,
+   "sara": false,
+   "teknik": [
+    "Teori konspirasi"
+   ],
+   "arah": "Netral/tidak jelas",
+   "disarm": [
+    "T0022",
+    "T0075.001"
+   ]
+  },
+  "emosional_fear": {
+   "v": "RISIKO SEDANG",
+   "risk": 50,
+   "sara": true,
+   "teknik": [
+    "Framing ancaman identitas",
+    "Eksploitasi isu SARA"
+   ],
+   "arah": "Menyerang/mendiskreditkan",
+   "disarm": [
+    "T0079"
+   ]
+  },
+  "kosong": {
+   "v": "RISIKO RENDAH",
+   "risk": 10,
+   "sara": false,
+   "teknik": [],
+   "arah": "Netral/tidak jelas",
+   "disarm": []
+  }
+ },
+ "runB_perf": {
+  "200": {
+   "ms": 83,
+   "cls": 1
+  },
+  "500": {
+   "ms": 136,
+   "cls": 1
+  },
+  "1000": {
+   "ms": 211,
+   "cls": 1
+  },
+  "2000": {
+   "ms": 559,
+   "cls": 1
+  },
+  "5000": {
+   "ms": 3025,
+   "cls": 1
+  }
+ },
+ "sample_buzzer": {
+  "idx": 67,
+  "cls": 2,
+  "nb": 8
+ },
+ "pageerrors_final": [],
+ "console_errors": []
+}

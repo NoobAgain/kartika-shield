@@ -4,8 +4,8 @@ const XMEM=()=>({bs_h:hist,bs_m:mr,bs_rev:fRev,bs_cmd:cmd});
 const isO=o=>o&&typeof o==='object'&&!Array.isArray(o),isS=(v,n)=>typeof v==='string'&&v.length<=n,isN=v=>typeof v==='number'&&isFinite(v);
 // Pemeriksa bentuk tiap koleksi. Mengembalikan true bila record layak disimpan.
 const XV={
-bs_h:o=>isO(o)&&isS(o.v,40)&&isN(o.r)&&isN(o.d),
-bs_m:o=>isO(o)&&isS(o.p,4)&&PV.some(x=>x.c===o.p)&&isS(o.i,400)&&o.i&&isN(o.v)&&o.v>0&&isN(o.r)&&o.r>=0&&o.r<=100,
+bs_h:o=>isO(o)&&isS(o.v,40)&&isN(o.r)&&isN(o.d)&&(o.t==null||(Array.isArray(o.t)&&o.t.length<=10&&o.t.every(x=>isS(x,80))))&&isS(o.a||'',300)&&isS(o.dir||'',80)&&isS(o.i||'',200)&&(o.c==null||(isO(o.c)&&Object.keys(o.c).length<=8&&Object.entries(o.c).every(([k,v])=>/^[A-Z_]{3,20}$/.test(k)&&isN(v)))),
+bs_m:o=>isO(o)&&isS(o.p,4)&&PV.some(x=>x.c===o.p)&&isS(o.i,400)&&o.i&&isN(o.v)&&o.v>0&&o.v<=1e7&&isN(o.r)&&o.r>=0&&o.r<=100,
 bs_rev:o=>isO(o)&&isS(o.ts,40)&&isN(o.risk)&&(o.v===0||o.v===1)&&isS(o.text,400),
 bs_cmd:o=>isO(o)&&isS(o.id,40)&&isS(o.ts,40)&&isS(o.judul,160)&&isS(o.status,20)&&isS(o.pic||'',80)&&isS(o.deadline||'',20)&&isS(o.catatan||'',400)&&isN(o.risiko)&&isS(o.ringkas||'',200)};
 const XD={ // kunci duplikat

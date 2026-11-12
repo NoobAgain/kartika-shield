@@ -35,3 +35,7 @@ Skor 0-100 dipetakan ke RENDAH, PERLU DIVERIFIKASI, SEDANG, atau TINGGI. Ini **i
 2. Untuk pengukuran nyata, sambungkan **Feed**, tandai minimal 30 hasil, lalu unduh **tinjauan (CSV)** sebagai bukti.
 3. Buka **Laporan Komando**, susun laporan, simpan tindak lanjut, lalu unduh JSON/CSV atau cetak PDF sebagai rekap sesi.
 4. Simpan tanggal, sumber, dan jumlah sampel bersama laporan agar hasil dapat diperiksa ulang.
+
+
+---
+**Pembaruan v2.0:** evaluasi internal 18 akun di atas tetap sirkular. Pengujian yang dapat diperiksa (dataset DEV/uji tertahan, skenario koordinasi, TP/FP/TN/FN, precision/recall/F1) ada di `TEST_REPORT.md` dan `eval/hasil/`.

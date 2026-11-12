@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Arial,Helvetica,sans-serif" font-size="12">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#334"/></marker><marker id="r" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#b3202a"/></marker></defs>
+<rect width="980" height="560" fill="#ffffff"/><text x="16" y="26" font-size="16" font-weight="bold" fill="#17335f">Arsitektur SESUDAH integrasi (v2.0): satu mesin kognitif bersama, tanpa AI, tanpa CDN</text>
+<rect x="16" y="50" width="150" height="70" rx="6" fill="#f3f3f3" stroke="#999" stroke-width="1.5"/>
+<text x="24" y="68" fill="#111" font-weight="bold">Sumber data</text>
+<text x="24" y="83" fill="#111">Bluesky Jetstream, RSS,</text>
+<text x="24" y="98" fill="#111">Bot CSV (HH:MM atau ISO),</text>
+<text x="24" y="113" fill="#111">input manual</text>
+<rect x="200" y="50" width="190" height="60" rx="6" fill="#e3f6e8" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="208" y="68" fill="#111" font-weight="bold">collector/server.js</text>
+<text x="208" y="83" fill="#111">require(00a) penilai SAMA</text>
+<rect x="430" y="50" width="200" height="80" rx="6" fill="#d6f0dc" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="438" y="68" fill="#111" font-weight="bold">00a-kognitif-teks.js (CTA)</text>
+<text x="438" y="83" fill="#111">8 kategori, bukti, konteks,</text>
+<text x="438" y="98" fill="#111">metode, keterbatasan</text>
+<rect x="430" y="150" width="200" height="80" rx="6" fill="#d6f0dc" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="438" y="168" fill="#111" font-weight="bold">00b-kognitif-narasi.js</text>
+<text x="438" y="183" fill="#111">klaster (prefix filtering),</text>
+<text x="438" y="198" fill="#111">koordinasi berlapis, graf,</text>
+<text x="438" y="213" fill="#111">kronologi</text>
+<rect x="430" y="250" width="200" height="80" rx="6" fill="#d6f0dc" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="438" y="268" fill="#111" font-weight="bold">00c-kognitif-dini.js</text>
+<text x="438" y="283" fill="#111">skor komposit + gerbang</text>
+<text x="438" y="298" fill="#111">AWAS/SIAGA/WASPADA/AMAN</text>
+<text x="438" y="313" fill="#111">Cognitive Situation Report</text>
+<rect x="200" y="150" width="190" height="60" rx="6" fill="#e3f6e8" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="208" y="168" fill="#111" font-weight="bold">02 Analisis Konten</text>
+<text x="208" y="183" fill="#111">(UI untuk 00a, tanpa AI)</text>
+<rect x="200" y="230" width="190" height="70" rx="6" fill="#e3f6e8" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="208" y="248" fill="#111" font-weight="bold">03 Deteksi Buzzer &amp;</text>
+<text x="208" y="263" fill="#111">Peta Narasi/Pengaruh</text>
+<text x="208" y="278" fill="#111">(UI untuk 00b+00c, graf d3)</text>
+<rect x="200" y="320" width="190" height="60" rx="6" fill="#e3f6e8" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="208" y="338" fill="#111" font-weight="bold">06 DISARM</text>
+<text x="208" y="353" fill="#111">(dari indikator 00a)</text>
+<rect x="680" y="50" width="150" height="60" rx="6" fill="#eef3fb" stroke="#5b7bb5" stroke-width="1.5"/>
+<text x="688" y="68" fill="#111" font-weight="bold">05 Peta Live</text>
+<text x="688" y="83" fill="#111">(skor = peringatan dini)</text>
+<rect x="680" y="130" width="150" height="60" rx="6" fill="#e3f6e8" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="688" y="148" fill="#111" font-weight="bold">04 Peta Dini</text>
+<text x="688" y="163" fill="#111">+ panel EWS kognitif</text>
+<rect x="680" y="210" width="150" height="70" rx="6" fill="#e3f6e8" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="688" y="228" fill="#111" font-weight="bold">08 Laporan Komando</text>
+<text x="688" y="243" fill="#111">+ bagian 2a Situasi</text>
+<text x="688" y="258" fill="#111">Kognitif</text>
+<rect x="680" y="300" width="150" height="60" rx="6" fill="#eef3fb" stroke="#5b7bb5" stroke-width="1.5"/>
+<text x="688" y="318" fill="#111" font-weight="bold">10 Pusat Data</text>
+<text x="688" y="333" fill="#111">(validasi kategori)</text>
+<rect x="430" y="360" width="200" height="50" rx="6" fill="#e3f6e8" stroke="#2f8f4e" stroke-width="1.5"/>
+<text x="438" y="378" fill="#111" font-weight="bold">vendor/ d3 + topojson LOKAL</text>
+<text x="438" y="393" fill="#111">(offline, tanpa CDN)</text>
+<line x1="166" y1="85.0" x2="200" y2="80.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="166" y1="85.0" x2="200" y2="180.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="166" y1="85.0" x2="200" y2="265.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="390" y1="80.0" x2="430" y2="90.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="390" y1="180.0" x2="430" y2="90.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="390" y1="265.0" x2="430" y2="190.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="530.0" y1="230" x2="530.0" y2="250" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="530.0" y1="130" x2="295.0" y2="320" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="630" y1="290.0" x2="680" y2="160.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="630" y1="290.0" x2="680" y2="245.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="630" y1="190.0" x2="680" y2="80.0" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="755.0" y1="190" x2="755.0" y2="210" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="755.0" y1="280" x2="755.0" y2="300" stroke="#334" stroke-width="1.4" marker-end="url(#a)"/>
+</svg>

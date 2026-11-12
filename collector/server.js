@@ -6,6 +6,7 @@ const HOST = process.env.HOST || '127.0.0.1';              // hanya komputer ini
 const LOG_CSV = process.env.LOG_CSV || '';                    // opsional: simpan hasil ke berkas CSV (akun tetap berupa hash) untuk ditinjau manual
 const MAX_CLIENTS = +process.env.MAX_CLIENTS || 20;
 const ALLOW = (process.env.ALLOW_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+const HOST_OK = (process.env.ALLOW_HOST || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);   // host tambahan bila HOST=0.0.0.0
 const okOrigin = o => o === 'null' || o === 'file://' || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o || '') || ALLOW.includes(o);  // 'null' / 'file://' = berkas HTML lokal
 const JETSTREAM = process.env.JETSTREAM || 'wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post';
 const DEFAULT_RSS = [
@@ -18,7 +19,8 @@ const DEFAULT_RSS = [
 ];
 const RSS_RAW = process.env.RSS_URLS == null ? null : process.env.RSS_URLS.trim();
 const RSS_URLS = RSS_RAW == null ? DEFAULT_RSS : (RSS_RAW.toLowerCase() === 'off' ? [] : RSS_RAW.split(',')).map(s => s.trim()).filter(Boolean);
-const MIN_RISK = +process.env.MIN_RISK || 45;       // ambang risiko untuk dilaporkan
+const _mr = process.env.MIN_RISK === undefined || process.env.MIN_RISK === '' ? NaN : +process.env.MIN_RISK;
+const MIN_RISK = Number.isFinite(_mr) ? _mr : 45;       // ambang risiko untuk dilaporkan
 const WINDOW_MS = 15 * 60 * 1000;                    // jendela deteksi teks kembar
 const BOT_ENDPOINT = process.env.BOT_BSKY_ENDPOINT || 'https://api.bsky.app/xrpc/app.bsky.feed.searchPosts';
 const BOT_KEYWORDS = (process.env.BOT_KEYWORDS || 'hoaks,disinformasi,provokasi,pemilu,konflik sosial').split(',').map(s => s.trim()).filter(Boolean).slice(0, 8);
@@ -37,19 +39,12 @@ let groups = [], newsGroups = [];
 const send = (ev, d) => { const m = `event: ${ev}\ndata: ${JSON.stringify(d)}\n\n`; clients.forEach(r => r.write(m)); };
 const city = t => { const f = CITY.find(c => c[0].test(t)); return f ? f[1] : null; };
 
-// Penilai pola bahasa (sama dengan mode offline di aplikasi). Ini indikator, bukan bukti.
-function heur(t) {
-  const kw = /\b(?:agama|suku|etnis|cina|china|kafir|pribumi|asing|aseng|rumah ibadah|gereja|masjid|komunis|antek)\b/i.test(t);   // kata sensitif saja tidak cukup
-  let s = 0, hit = 0;
-  [[/!{2,}|\b[A-Z]{5,}\b\s+\b[A-Z]{3,}\b/, 15], [/\b(?:sebarkan|share|viral|forward|sebelum dihapus)\b/i, 20], [/(media tidak berani|ditutupi|disembunyikan|konspirasi)/i, 20], [/(menguasai|menghancurkan|musnah|serbu|bantai)/i, 20]]
-    .forEach(([x, p]) => { if (x.test(t)) { s += p; hit++; } });
-  const sara = kw && hit > 0;   // SARA dihitung hanya bila muncul bersama pola manipulasi lain
-  if (sara) s += 20;
-  if (!/(https?:\/\/|menurut|dikutip|sumber)/i.test(t)) s += 10;
-  return { risk: Math.min(s, 95), sara };
-}
+// Penilai tunggal: mesin Cognitive Threat Analysis yang SAMA dengan dasbor (../js/00a-kognitif-teks.js), tanpa AI.
+const KSTeks = require('../js/00a-kognitif-teks.js');
+function heur(t) { const r = KSTeks.analisis(t); return { risk: Math.min(r.risk, 95), sara: r.sara }; }
 const norm = t => t.toLowerCase().replace(/https?:\/\/\S+|@\w+/g, '').replace(/4/g,'a').replace(/3/g,'e').replace(/1/g,'i').replace(/0/g,'o').replace(/(.)\1{2,}/g,'$1').replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
-const anon = did => crypto.createHash('sha256').update(did).digest('hex').slice(0, 8); // akun tidak ditampilkan apa adanya
+const SALT = process.env.ANON_SALT || crypto.randomBytes(16).toString('hex');   // garam acak per proses (isi ANON_SALT agar stabil antar sesi)
+const anon = did => crypto.createHmac('sha256', SALT).update(did).digest('hex').slice(0, 8); // akun tidak ditampilkan apa adanya
 
 const csvc = v => { v = String(v == null ? '' : v); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
 function logCsv(h) {
@@ -175,15 +170,21 @@ function onMessage(raw) {
   if (h.risk >= MIN_RISK) emit({ src: 'Bluesky', type: h.sara ? 0 : 3, risk: h.risk, text: r.text.slice(0, 280), city: city(r.text), sara: h.sara, acct: anon(j.did) });
 }
 function connect() {
-  const ws = new WebSocket(JETSTREAM);
+  let ws; try { ws = new WebSocket(JETSTREAM); } catch (e) { console.log('JETSTREAM tidak valid:', e.message, '- mencoba lagi 30 detik'); return void setTimeout(connect, 30000); }
   ws.onopen = () => console.log('Jetstream tersambung');
   ws.onmessage = e => onMessage(String(e.data));
   ws.onclose = () => { console.log('Jetstream putus, mencoba lagi 5 detik'); setTimeout(connect, 5000); };
   ws.onerror = () => {};
 }
 const dec = s => String(s || '').replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+function blocksOf(x, tag) {   // pemindaian linear (hindari backtracking kuadratik pada feed hostile)
+  const out = [], lo = x.toLowerCase(), open = '<' + tag, close = '</' + tag + '>';
+  let i = 0;
+  while (out.length < 200) { const a = lo.indexOf(open, i); if (a < 0) break; const b = lo.indexOf(close, a); if (b < 0) break; out.push(x.slice(a, b + close.length)); i = b + close.length; }
+  return out;
+}
 function rssItems(x) {
-  const out = [], blocks = x.match(/<item[\s\S]*?<\/item>/gi) || x.match(/<entry[\s\S]*?<\/entry>/gi) || [];
+  const out = [], blocks = blocksOf(x, 'item').length ? blocksOf(x, 'item') : blocksOf(x, 'entry');
   for (const b of blocks) {
     const pick = (re) => { const m = b.match(re); return m ? dec(m[1]) : ''; };
     const title = pick(/<title[^>]*>([\s\S]*?)<\/title>/i);
@@ -210,7 +211,7 @@ function newsTrack(title, desc, source) {   // judul mirip dari >= 2 penerbit be
 }
 async function pollRss(u) {
   try {
-    const x = await (await fetch(u, { signal: AbortSignal.timeout(10000) })).text();
+    const x = (await (await fetch(u, { signal: AbortSignal.timeout(10000) })).text()).slice(0, 2e6);
     const host = new URL(u).hostname.replace(/^www\./, '');
     for (const it of rssItems(x).slice(0, 20)) {
       const t = it.title.trim(), key = (it.link || t).trim(); if (!t || seenRss.has(key)) continue;
@@ -230,7 +231,7 @@ function readJson(q) {
     let n = 0, chunks = [];
     q.on('data', c => {
       n += c.length;
-      if (n > 65536) { reject(new Error('Body terlalu besar')); q.destroy(); }
+      if (n > 65536) { reject(Object.assign(new Error('Body terlalu besar'), { code: 413 })); }
       else chunks.push(c);
     });
     q.on('end', () => { try { resolve(chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}); } catch (e) { reject(new Error('JSON tidak valid')); } });
@@ -247,6 +248,9 @@ http.createServer(async (q, r) => {
     r.writeHead(204); return r.end();
   }
   const path = String(q.url || '/').split('?')[0];
+  const host = String(q.headers.host || '').replace(/:\d+$/, '').toLowerCase();
+  if (!(['localhost', '127.0.0.1', '[::1]'].includes(host) || HOST_OK.includes(host))) { r.writeHead(403); return r.end(); }   // anti DNS rebinding
+  if (q.method === 'POST' && ((o && !okOrigin(o)) || !/^application\/json\b/i.test(q.headers['content-type'] || ''))) return reply(r, 403, { ok: false, error: 'Origin atau Content-Type tidak diizinkan' });   // anti CSRF
   if (path === '/events') {
     if (clients.size >= MAX_CLIENTS) { r.writeHead(503); return r.end(); }
     r.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
@@ -263,7 +267,7 @@ http.createServer(async (q, r) => {
       if (typeof d.auto === 'boolean') bot.auto = d.auto;
       armBot(bot.auto);
       return reply(r, 200, { ok: true, bot: botPublic() });
-    } catch (e) { return reply(r, 400, { ok: false, error: e.message }); }
+    } catch (e) { return reply(r, e.code === 413 ? 413 : 400, { ok: false, error: e.message }); }
   }
   if (path === '/bot/search' && q.method === 'POST') {
     try {
