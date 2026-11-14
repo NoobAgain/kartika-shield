@@ -1,15 +1,18 @@
 {
   "name": "kartika-shield",
-  "version": "2.0.0",
+  "version": "2.1.1",
   "private": true,
   "description": "Kartika Shield, Cognitive Warfare Intelligence & Early Warning System (web dashboard, tanpa AI)",
   "scripts": {
     "build": "node tools/build.js",
-    "collector": "node collector/server.js",
+    "collector": "node --env-file-if-exists=.env collector/server.js",
     "buzzer": "node collector/ambil-buzzer.js",
     "youtube": "node collector/ambil-youtube.js",
     "test:unit": "node tests/unit_engine.js",
-    "test": "sh tests/run_all.sh"
+    "test:news": "node tests/test_news_analysis.js && node tests/test_public_news.js",
+    "test:mini-tv": "node tests/test_mini_tv.js",
+    "test": "sh tests/run_all.sh",
+    "test:buzzer": "node tests/test_buzzer_auto.js"
   },
   "engines": {
     "node": ">=22"

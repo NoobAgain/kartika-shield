@@ -1,0 +1,38 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const elements = {};
+for (const id of ['mini-tv','mini-tv-show','mini-tv-channel','mini-tv-player','mini-tv-open','mini-tv-status','mini-tv-hide']) {
+  elements[id] = { id, hidden: false, value: '', listeners: {}, addEventListener(type, fn) { this.listeners[type] = fn; }, click() { this.listeners.click?.(); } };
+}
+const store = new Map();
+const context = { location: { origin: 'http://127.0.0.1:8787' }, document: { getElementById: id => elements[id] || null }, localStorage: { getItem: k => store.get(k) || null, setItem: (k,v) => store.set(k,String(v)) }, encodeURIComponent };
+vm.runInNewContext(fs.readFileSync('js/modules/mini-tv.js','utf8'), context);
+assert.match(elements['mini-tv-player'].src, /\/embed\/rQJoEpzKkNk/);
+assert.match(elements['mini-tv-player'].src, /^https:\/\/www\.youtube-nocookie\.com\/embed\//);
+assert.match(elements['mini-tv-player'].src, /autoplay=1/);
+assert.match(elements['mini-tv-player'].src, /mute=1/);
+assert.match(elements['mini-tv-player'].src, /origin=http%3A%2F%2F127.0.0.1%3A8787/);
+assert.equal(elements['mini-tv-open'].href, 'https://www.youtube.com/watch?v=rQJoEpzKkNk');
+assert.equal(elements['mini-tv-channel'].value, 'tvone');
+elements['mini-tv-channel'].value = 'kompas';
+elements['mini-tv-channel'].listeners.change();
+assert.match(elements['mini-tv-player'].src, /\/embed\/DOOrIxw5xOw/);
+assert.equal(elements['mini-tv-open'].href, 'https://www.youtube.com/watch?v=DOOrIxw5xOw');
+elements['mini-tv-channel'].value = 'metro';
+elements['mini-tv-channel'].listeners.change();
+assert.match(elements['mini-tv-player'].src, /\/embed\/kpZFiat3zY4/);
+assert.equal(elements['mini-tv-open'].href, 'https://www.youtube.com/watch?v=kpZFiat3zY4');
+elements['mini-tv-channel'].value = 'tvri';
+elements['mini-tv-channel'].listeners.change();
+assert.equal(elements['mini-tv-channel'].value, 'tvone', 'unknown/removed channel falls back to tvOne');
+elements['mini-tv-hide'].click();
+assert.equal(elements['mini-tv'].hidden, true);
+assert.equal(elements['mini-tv-show'].hidden, false);
+elements['mini-tv-show'].click();
+assert.equal(elements['mini-tv'].hidden, false);
+assert.equal(store.get('ks_mini_tv_channel'), 'tvone');
+const html = fs.readFileSync('index.html','utf8');
+assert.doesNotMatch(html, /option value=['"]tvri['"]/i);
+console.log('PASS mini TV: direct video IDs, three requested channels, TVRI removed, fallback, hide/show, local preference');

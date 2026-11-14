@@ -1,16 +1,16 @@
 {
- "total": 66,
- "lulus": 66,
+ "total": 68,
+ "lulus": 68,
  "hasil": [
   {
    "nama": "N01 leet \"s3b4rk4n\" -> sebarkan",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "nama": "N02 huruf dipisah spasi disatukan",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "nama": "N03 huruf berulang diringkas",
@@ -35,7 +35,7 @@
   {
    "nama": "C01 EMOSI terdeteksi",
    "ok": true,
-   "ms": 17
+   "ms": 11
   },
   {
    "nama": "C02 KETAKUTAN terdeteksi",
@@ -60,12 +60,12 @@
   {
    "nama": "C06 PROVOKATIF terdeteksi",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "nama": "C07 REPETISI (kata berulang) terdeteksi",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "nama": "C08 TIDAK_TERVERIFIKASI terdeteksi",
@@ -85,7 +85,7 @@
   {
    "nama": "C11 bukti (kutipan) selalu menyertai indikator",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "nama": "C12 metode + keterbatasan + keyakinan selalu ada",
@@ -95,12 +95,12 @@
   {
    "nama": "C13 skor kategori <= batas dan total <= 100",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "nama": "C14 deterministik (input sama = hasil sama)",
    "ok": true,
-   "ms": 2
+   "ms": 1
   },
   {
    "nama": "C15 ambang verdict: 19=RENDAH 20=VERIFIKASI 45=SEDANG 65=TINGGI",
@@ -135,12 +135,12 @@
   {
    "nama": "K06 ajakan \"share\" saja (donor darah) tidak jadi SEDANG",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "nama": "K07 kata identitas saja BUKAN SARA",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "nama": "K08 identitas + ancaman = indikasi SARA",
@@ -160,17 +160,17 @@
   {
    "nama": "R01 teks 200 ribu karakter selesai < 2 dtk",
    "ok": true,
-   "ms": 93
+   "ms": 56
   },
   {
    "nama": "R02 pola ReDoS (a a a ..., !!!!, kata panjang) selesai < 2 dtk",
    "ok": true,
-   "ms": 31
+   "ms": 33
   },
   {
    "nama": "R03 tipe input non-string tidak melempar",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "nama": "R04 kata \"__proto__\"/\"constructor\" pada teks tidak merusak",
@@ -225,22 +225,22 @@
   {
    "nama": "M10 tanggal berbeda: tidak serempak",
    "ok": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "nama": "M11 PRINSIP: teks+waktu saja (akun lama) tidak lebih dari \"sedang\"",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "nama": "M12 PRINSIP: label \"indikasi kuat tidak autentik\" butuh >=2 sinyal profil",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "nama": "M13 satu akun mengulang: koordinasi 0",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "nama": "M14 bantahan dikecualikan dari penguat",
@@ -255,17 +255,27 @@
   {
    "nama": "M16 kronologi terurut menaik",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "nama": "M17 [KETERBATASAN DIDOKUMENTASI] stance berlawanan tanpa kata bantahan ikut satu klaster",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "nama": "M18 deterministik",
    "ok": true,
    "ms": 0
+  },
+  {
+   "nama": "M19 profil tidak tersedia tidak dianggap akun baru atau statistik nol",
+   "ok": true,
+   "ms": 1
+  },
+  {
+   "nama": "M20 pola nama akun otomatis hanya dihitung dari metadata handle sumber",
+   "ok": true,
+   "ms": 1
   },
   {
    "nama": "E01 bobot komponen berjumlah 1,0",
@@ -280,7 +290,7 @@
   {
    "nama": "E03 kampanye terkoordinasi -> level >= SIAGA",
    "ok": true,
-   "ms": 3
+   "ms": 2
   },
   {
    "nama": "E04 skor = jumlah berbobot komponen (dapat direproduksi)",
@@ -325,7 +335,7 @@
   {
    "nama": "L02 laporan memuat 8 bagian wajib",
    "ok": true,
-   "ms": 2
+   "ms": 1
   },
   {
    "nama": "L03 teks laporan memuat bagian & batasan",

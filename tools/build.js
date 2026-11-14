@@ -14,6 +14,15 @@ html = html.replace(/<script src="((?!https?:)[^"]+)"><\/script>/g, (_, f) => {
   if (/<\/script/i.test(code)) throw new Error('Mengandung </script>: ' + f);
   return '<script>\n' + code + '</script>';
 });
+// Aset lambang Kodam yang direferensikan dari JavaScript ikut di-inline
+// agar dist/kartika-shield.html tetap mandiri saat dibuka tanpa server.
+html = html.replace(/(['"])assets\/kodam-insignia\/([^'"]+)\1/g, (_, q, f) => {
+  const p = path.join(root, 'assets', 'kodam-insignia', f);
+  const b = fs.readFileSync(p);
+  const ext = path.extname(f).toLowerCase();
+  const type = ext === '.webp' ? 'image/webp' : ext === '.svg' ? 'image/svg+xml' : 'image/png';
+  return q + 'data:' + type + ';base64,' + b.toString('base64') + q;
+});
 // Gambar lokal
 html = html.replace(/src='(assets\/[^']+)'/g, (_, f) => {
   const b = fs.readFileSync(path.join(root, f));

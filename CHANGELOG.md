@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## v2.1.1 — Automatic Buzzer Full Analysis (12 November 2026)
+
+### Perbaikan
+- Pencarian Bluesky memakai `api.bsky.app` sebagai endpoint utama dan fallback endpoint AppView alternatif; status bot menyimpan jumlah keyword gagal dan endpoint yang berhasil.
+- Tombol **Ambil & analisis sekarang** kini menunggu pencarian Collector selesai, memuat ulang data, lalu menjalankan laporan lengkap dari mesin analisis yang sama dengan mode manual.
+- Siklus otomatis juga memperbarui laporan setelah pengumpulan selesai, termasuk saat tidak ada unggahan baru (arsip lokal dianalisis ulang dan statusnya dibedakan dari data baru).
+- Statistik profil yang tidak tersedia tidak lagi membuat unggahan dibuang atau dianggap memiliki nilai nol. Indikator profil yang tidak diketahui dinonaktifkan; analisis teks/waktu tetap berjalan.
+- Indikator pola nama akun dihitung dari handle sumber sebagai metadata boolean, bukan dari pseudonim hash yang bisa mengandung angka.
+- Tautan unggahan tidak lagi memakai handle sintetis `.invalid`; DID publik dipakai sebagai rute profil cadangan.
+- Daftar sumber menampilkan hingga 20 unggahan terbaru beserta cuplikan teks, waktu unggah, dan waktu pengumpulan.
+
+### Pengujian tambahan
+- Uji integrasi Collector mensimulasikan HTTP 403 pada endpoint utama dan memverifikasi fallback, pengayaan profil, pseudonimisasi, URL sumber, serta status hasil pencarian.
+- Uji unit tambahan memastikan profil yang tidak tersedia tidak dianggap akun baru/follower nol dan tidak memicu sinyal profil palsu.
+
 ## v2.0.0, Cognitive Warfare Intelligence & Early Warning System (12 November 2026)
 Basis: `kartika-shield-fixed` v1.1.0 (paket `kartika_shild.zip`). Audit awal: `AUDIT_BASELINE.md`. Bukti uji: `TEST_REPORT.md`.
 
@@ -68,3 +83,15 @@ Mesin teks dibekukan (hash 00a pada `eval/FREEZE_SHA256.txt`) sebelum set uji te
 
 ## v1.1.0, sebelum integrasi (paket audit)
 Perbaikan audit independen 8–9 November 2026 (lihat `LAPORAN_AUDIT_KARTIKA_SHIELD.md`).
+
+
+## 2026-11-12 — Live Intelligence News tahap awal
+
+- Menambahkan analisis awal berita berbasis aturan lokal di `collector/services/news-analysis.js`.
+- Artikel RSS baru menyimpan `riskScore`, `confidenceScore`, status kewaspadaan, dimensi, alasan, dan keterbatasan analisis di arsip JSON lokal.
+- Endpoint `/news` mendukung filter `status`, `source`, dan `q` selain `limit` dan `province`.
+- Tampilan Peta Peringatan Dini menampilkan status, risk/confidence score, alasan analisis, pencarian, dan filter media/status.
+- Deduplicator RSS diinisialisasi dari arsip lokal sehingga berita yang sama tidak ditambahkan ulang setelah Collector restart.
+- Analisis ini bukan AI dan tidak memverifikasi fakta; integrasi AI otomatis lanjutan masih menjadi tahap berikutnya.
+
+- Menambahkan Mini TV mandiri di kiri bawah Peta Dunia Live, dengan pemilihan TVRI Nasional, tvOne, Metro TV, dan Kompas TV, tombol sembunyikan/tampilkan, tautan kanal resmi, serta kontrol native player. Dashboard tidak menampilkan label LIVE karena status live aktual belum diverifikasi via API.

@@ -1,6 +1,6 @@
 {
   "name": "kartika-collector",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Pengumpul data Bluesky/RSS untuk dasbor Kartika Shield (SSE)",
   "main": "server.js",

@@ -1,10 +1,10 @@
 {
- "node": "v22.23.4",
+ "node": "v22.16.0",
  "narasi": [
   {
    "data": "realistis",
    "baris": 200,
-   "ms": 93,
+   "ms": 46,
    "klaster": 16,
    "peringatan": 16,
    "heapDeltaMB": 2
@@ -12,31 +12,31 @@
   {
    "data": "realistis",
    "baris": 1000,
-   "ms": 277,
+   "ms": 147,
    "klaster": 83,
    "peringatan": 83,
-   "heapDeltaMB": 6
+   "heapDeltaMB": 5
   },
   {
    "data": "realistis",
    "baris": 5000,
-   "ms": 1667,
+   "ms": 1050,
    "klaster": 416,
    "peringatan": 416,
-   "heapDeltaMB": 21
+   "heapDeltaMB": 22
   },
   {
    "data": "realistis",
    "baris": 20000,
-   "ms": 8465,
+   "ms": 5497,
    "klaster": 1666,
    "peringatan": 1666,
-   "heapDeltaMB": 84
+   "heapDeltaMB": 80
   },
   {
    "data": "templat-patologis",
    "baris": 200,
-   "ms": 68,
+   "ms": 15,
    "klaster": 1,
    "peringatan": 1,
    "heapDeltaMB": 7
@@ -44,7 +44,7 @@
   {
    "data": "templat-patologis",
    "baris": 1000,
-   "ms": 107,
+   "ms": 35,
    "klaster": 1,
    "peringatan": 1,
    "heapDeltaMB": 9
@@ -52,23 +52,23 @@
   {
    "data": "templat-patologis",
    "baris": 5000,
-   "ms": 235,
+   "ms": 125,
    "klaster": 1,
    "peringatan": 1,
-   "heapDeltaMB": 23
+   "heapDeltaMB": 25
   },
   {
    "data": "templat-patologis",
    "baris": 20000,
-   "ms": 832,
+   "ms": 493,
    "klaster": 1,
    "peringatan": 1,
-   "heapDeltaMB": 78
+   "heapDeltaMB": 82
   }
  ],
  "cta": {
   "teks": 20000,
-  "ms": 647,
-  "perDetik": 30896
+  "ms": 542,
+  "perDetik": 36893
  }
 }

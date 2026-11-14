@@ -161,3 +161,49 @@ $env:FB_PAGE_ID="ID_HALAMAN"
 node collector/ambil-facebook.js --jam 24
 ```
 Token dikirim lewat header, tidak pernah dicetak, dan tautan paginasi yang memuat token tidak diikuti. Hasil `facebook.csv` diunggah di tab Deteksi Buzzer. Untuk izin tertentu Meta bisa meminta App Review bila aplikasi dipakai pihak lain, tetapi untuk Halaman milik sendiri dengan akun admin/pengembang aplikasi biasanya tidak perlu.
+
+
+## Peta Peringatan Dini berbasis berita publik
+
+Peta Dini versi ini mengambil artikel dari RSS publik melalui `collector/server.js`, bukan dari array contoh yang ditanam di frontend. Daftar bawaan meliputi [ANTARA RSS](https://www.antaranews.com/rss/terkini.xml), [CNN Indonesia Nasional RSS](https://www.cnnindonesia.com/nasional/rss), [detikcom RSS](https://news.detik.com/berita/rss), [CNBC Indonesia RSS](https://www.cnbcindonesia.com/news/rss), dan Google News RSS pencarian Indonesia. Collector memeriksa feed saat start dan setiap 5 menit serta menyimpan metadata artikel secara lokal ke `collector/data/news-articles.json` (dapat diubah dengan `NEWS_STORE`). Endpoint lokal `GET /news?limit=300` mengembalikan judul, URL artikel, penerbit/feed, tanggal publikasi (jika tersedia), waktu pengumpulan, indikator teks, dan kode provinsi jika nama wilayah terdeteksi secara eksplisit.
+
+Jalankan Collector dengan `npm run collector`, lalu buka dashboard dan pilih **Peta Peringatan Dini**. Tombol **Ambil berita publik sekarang** meminta data dari `http://127.0.0.1:8787/news`; tampilan juga mencoba memperbarui setiap 5 menit. Pastikan komputer terhubung ke internet. Jika Collector tidak berjalan, peta menampilkan status gagal dan tidak membuat data contoh.
+
+**Batas interpretasi:** jumlah pada peta adalah jumlah artikel RSS unik yang berhasil diambil, bukan volume unggahan media sosial, jumlah pembaca, atau ukuran viralitas. Artikel hanya dipetakan bila pengenal wilayah ditemukan pada judul/ringkasan; lokasi yang tidak disebutkan dibiarkan tanpa wilayah. Skor adalah indikator heuristik dari teks untuk mengurutkan kebutuhan verifikasi, bukan penetapan kebenaran berita, ancaman, niat, atau atribusi pelaku. Buka tautan sumber dan lakukan verifikasi manusia sebelum tindakan. RSS juga tidak menjamin cakupan seluruh berita atau pengambilan real-time; interval polling bawaan 5 menit.
+
+Pengumpulan RSS menyimpan metadata artikel dan ringkasan singkat untuk atribusi. Konten penuh tetap berada di situs penerbit. Sumber feed dapat diubah melalui variabel lingkungan `RSS_URLS` (pisahkan URL dengan koma; gunakan `RSS_URLS=off` untuk menonaktifkan).
+
+
+## Riset AI dengan sumber web publik
+
+Collector menyediakan `POST /api/ai/research`. Provider dapat dipilih `gemini`, `openai`, atau `both`. Gemini menggunakan Google Search Grounding; OpenAI menggunakan Responses API dengan tool `web_search`. Kunci API hanya dibaca dari environment server dan tidak boleh ditaruh di HTML/JavaScript browser.
+
+1. Salin `.env.example` menjadi `.env`.
+2. Isi `GEMINI_API_KEY` dan/atau `OPENAI_API_KEY`.
+3. Atur `GEMINI_MODEL` / `OPENAI_MODEL` sesuai model yang tersedia pada akun API.
+4. Jalankan `npm run collector` (Node.js 22+ mendukung `--env-file-if-exists`).
+5. Di Peta Peringatan Dini, gunakan panel **Riset AI berbasis sumber publik**.
+
+Mode `both` menjalankan kedua provider secara terpisah; ini bukan voting kebenaran. Jika hasil berbeda, tampilkan perbedaan dan periksa sumber primer. Jawaban AI tidak otomatis masuk skor peta. Penambahan ke peta tetap memerlukan sumber, wilayah yang eksplisit, dan peninjauan. Penggunaan API dapat menimbulkan biaya sesuai tarif provider. Jangan memasukkan data pribadi/sensitif.
+
+
+## Deteksi Buzzer Otomatis (v2.1.1)
+
+Modul Deteksi Buzzer kini dapat menerima batch unggahan publik Bluesky secara otomatis dari Collector. Collector mencari unggahan publik Bluesky melalui `api.bsky.app` dengan fallback ke `public.api.bsky.app` jika endpoint utama gagal. Data profil publik dipakai bila tersedia; jika statistik profil tidak tersedia, unggahan tetap dianalisis berdasarkan teks/waktu tanpa mengarang sinyal profil. Analisis otomatis memakai mesin dan laporan yang sama dengan mode CSV manual. Mode tempel CSV manual tetap tersedia.
+
+- Buka dashboard melalui `http://127.0.0.1:8787/` dan biarkan Collector aktif.
+- Tab **Deteksi Buzzer** menghubungkan SSE secara otomatis, mengambil buffer `/buzzer/data`, memperbarui analisis saat batch baru diterima, dan menganalisis ulang arsip lokal setelah pencarian selesai meski tidak ada unggahan baru.
+- Tombol **Ambil & analisis sekarang** meminta pencarian segera; **Hentikan/Aktifkan otomatis** mengendalikan jadwal bot.
+- Referensi sumber, cakupan, keterbatasan, privasi, dan interpretasi: `REFERENSI_DETEKSI_BUZZER.md`.
+
+Catatan: versi ini mengotomatisasi sumber Bluesky saja. Ia bukan pemantauan semua platform dan tidak membuktikan akun sebagai buzzer. Kesamaan teks/waktu adalah indikator korelasi; verifikasi manusia tetap wajib.
+
+## Overlay Kodam (upgrade 12 November 2026)
+- Peta Dunia Live kini menampilkan 27 penanda identitas Kodam; Peta Peringatan Dini tetap mempertahankan 38 provinsi sebagai unit data dan memakai badge Kodam sesuai pemetaan referensi.
+- Badge pada paket ini adalah identifikasi grafis netral berinisial, **bukan lambang resmi Kodam/TNI AD**. Ganti dengan aset lambang resmi yang telah diizinkan sebelum dipakai sebagai paparan resmi.
+- Rincian, sumber, dan batas pemetaan ada di `UPGRADE_KODAM_2026.md`.
+
+
+## Pemantauan berbasis Kodam
+
+Lokasi hasil analisis ditampilkan pada tingkat 27 Kodam. Kode provinsi tetap dipertahankan sebagai metadata sumber untuk ketertelusuran, kemudian dipetakan melalui `data/kodam.js` dan `js/00d-kodam-scope.js`. Nama kota hanya dipakai sebagai alias pencarian lokasi, bukan sebagai label utama dashboard.

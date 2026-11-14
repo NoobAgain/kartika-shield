@@ -34,6 +34,73 @@ const j=JSON.stringify(d);if(j===xLast&&!force)return;if(await xPut('auto',{ts:D
 function xApply(data,mode){return xPut('undo',{ts:Date.now(),data:XMEM()}).then(()=>{XK.forEach(([k])=>{let v=data[k]||[];if(mode==='gabung')v=xDedupe(k,(XMEM()[k]).concat(v)).out;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}});return xAuto(true)}).then(()=>{xMsg('Selesai. Memuat ulang aplikasi…');setTimeout(()=>location.reload(),600)})}
 // ---- tampilan
 const xMsg=h=>{$('#xprev').innerHTML=h?'<div style="margin-top:12px">'+h+'</div>':''};
+
+// ---- Arsip berita nyata dari Collector RSS dengan filter tanggal publikasi
+let xNewsItems=[];
+const xNewsDate=d=>{if(!d)return null;const z=new Date(d);return Number.isNaN(z.getTime())?null:z};
+const xNewsDay=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+function xNewsRange(){
+ const mode=$('#xnewsPeriod')?.value||'month',now=new Date(),today=xNewsDay(now);
+ if(mode==='today')return{from:today,to:new Date(today.getTime()+86400000-1),label:'Hari ini'};
+ if(mode==='7d'){const from=new Date(today);from.setDate(from.getDate()-6);return{from,to:new Date(today.getTime()+86400000-1),label:'7 hari terakhir'};}
+ if(mode==='30d'){const from=new Date(today);from.setDate(from.getDate()-29);return{from,to:new Date(today.getTime()+86400000-1),label:'30 hari terakhir'};}
+ if(mode==='month')return{from:new Date(now.getFullYear(),now.getMonth(),1),to:new Date(now.getFullYear(),now.getMonth()+1,1)-1,label:'Bulan ini'};
+ if(mode==='pickmonth'){
+  const v=$('#xnewsMonth')?.value;if(!v)return{from:null,to:null,label:'Pilih bulan dan tahun'};
+  const [y,m]=v.split('-').map(Number);return{from:new Date(y,m-1,1),to:new Date(y,m,1)-1,label:new Date(y,m-1,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'})};
+ }
+ if(mode==='custom'){
+  const a=$('#xnewsFrom')?.value,b=$('#xnewsTo')?.value;
+  return{from:a?new Date(a+'T00:00:00'):null,to:b?new Date(b+'T23:59:59.999'):null,label:'Rentang tanggal'};
+ }
+ return{from:null,to:null,label:'Semua tanggal'};
+}
+function xRenderNews(){
+ const list=$('#xnewsList');if(!list)return;
+ const range=xNewsRange(),src=$('#xnewsSource')?.value||'',q=($('#xnewsQuery')?.value||'').trim().toLowerCase();
+ const filtered=xNewsItems.filter(a=>{
+  const d=xNewsDate(a.publishedAt),source=String(a.source||a.sourceHost||'');
+  if(range.from||range.to){if(!d)return false;if(range.from&&d<range.from)return false;if(range.to&&d>range.to)return false;}
+  if(src&&source!==src)return false;
+  const hay=[a.title,a.summary,source].join(' ').toLowerCase();return !q||hay.includes(q);
+ });
+ $('#xnewsSummary').textContent=`${filtered.length} artikel cocok · ${xNewsItems.length} artikel dimuat dari Collector · Periode: ${range.label}.`;
+ const fmt=d=>d?new Date(d).toLocaleString('id-ID'):'Tanggal publikasi tidak tersedia';
+ list.innerHTML=filtered.slice(0,100).map(a=>`<article class="bti" style="margin:7px 0;border-left:3px solid #5b9cbd"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="chip">${esc(a.source||a.sourceHost||'Media tidak diketahui')}</span><span class="note">${esc(fmt(a.publishedAt))}</span></div><b style="display:block;margin-top:5px">${esc(a.title||'Tanpa judul')}</b><p class="note" style="margin:5px 0">${esc(a.summary||'Ringkasan tidak tersedia dari feed.')}</p>${a.url?`<a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">Buka berita asli</a>`:''}</article>`).join('')||'<p class="note">Tidak ada artikel yang cocok dengan periode, media, atau pencarian ini. Coba periode lebih luas atau muat ulang Collector.</p>';
+ if(filtered.length>100)list.insertAdjacentHTML('beforeend',`<p class="note">Menampilkan 100 dari ${filtered.length} artikel cocok. Persempit filter untuk melihat hasil lainnya.</p>`);
+}
+async function xLoadNews(){
+ const status=$('#xnewsStatus'),button=$('#xnewsLoad');if(!status)return;
+ button.disabled=true;status.textContent='Mengambil artikel nyata dari Collector RSS…';
+ try{
+  const base=(localStorage.getItem('ks_collector_url')||'http://127.0.0.1:8787').replace(/\/$/,'');
+  const res=await fetch(base+'/news?limit=1500',{cache:'no-store',signal:AbortSignal.timeout(20000)});
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const data=await res.json();if(!data.ok||!Array.isArray(data.items))throw new Error('Format respons Collector tidak sesuai');
+  xNewsItems=data.items;
+  const sources=[...new Set(xNewsItems.map(a=>a.source||a.sourceHost).filter(Boolean))].sort();
+  const select=$('#xnewsSource'),selected=select.value;
+  select.innerHTML='<option value="">Semua media</option>'+sources.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  select.value=sources.includes(selected)?selected:'';
+  const dated=xNewsItems.filter(a=>xNewsDate(a.publishedAt)).length;
+  status.textContent=`Berhasil memuat ${xNewsItems.length} artikel dari Collector · ${sources.length} media · ${dated} memiliki tanggal publikasi. Data mengikuti artikel yang benar-benar tersimpan di Collector.`;
+  xRenderNews();
+ }catch(e){status.textContent='Gagal mengambil arsip berita: '+e.message+'. Pastikan Collector berjalan dan alamat Collector benar.';$('#xnewsList').innerHTML='<p class="note">Tidak ada data contoh yang dibuat. Arsip hanya menampilkan berita yang benar-benar diterima Collector.</p>';}
+ finally{button.disabled=false;}
+}
+$('#xnewsLoad')?.addEventListener('click',xLoadNews);
+['xnewsPeriod','xnewsMonth','xnewsFrom','xnewsTo','xnewsSource','xnewsQuery'].forEach(id=>{
+ const el=$('#'+id);if(!el)return;
+ el.addEventListener('input',()=>{
+  const mode=$('#xnewsPeriod').value;
+  $('#xnewsMonthWrap').style.display=mode==='pickmonth'?'block':'none';
+  $('#xnewsFromWrap').style.display=mode==='custom'?'block':'none';
+  $('#xnewsToWrap').style.display=mode==='custom'?'block':'none';
+  xRenderNews();
+ });
+});
+$('#xnewsPeriod')?.dispatchEvent(new Event('input'));
+
 async function xStatus(){let per='belum diketahui',q='';try{if(navigator.storage){per=(await navigator.storage.persisted())?'<b style="color:#15803d">aktif</b> (peramban tidak akan menghapus otomatis)':'<b style="color:#c2410c">belum</b> (peramban boleh menghapus saat ruang menipis)';const e=await navigator.storage.estimate();q=` · terpakai ${xKB(e.usage||0)} dari ${xKB(e.quota||0)}`}}catch(e){}
 const d=XMEM();const auto=await xGet('auto'),bk=+xLs('bs_bk')||0,n=xCount(d),days=bk?Math.floor((Date.now()-bk)/864e5):null,warn=n>0&&(bk===0||days>=7);
 const rows=XK.map(([k,nm])=>{const s=xLs(k),ok=s===''?d[k].length===0:s===JSON.stringify(d[k]);return`<tr><td>${nm}</td><td style="text-align:right">${d[k].length}</td><td style="text-align:right">${xKB(s.length)}</td><td>${ok?'':'<b style="color:#b3202a">tidak tersimpan, ruang peramban penuh atau diblokir</b>'}</td></tr>`}).join('');

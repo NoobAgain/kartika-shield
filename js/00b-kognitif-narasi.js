@@ -38,7 +38,9 @@
       const bg = new Set(); for (let k = 0; k < tk.length - 1; k++) bg.add(tk[k] + ' ' + tk[k + 1]); if (!bg.size) tk.forEach(x => bg.add(x));
       const tagar = ((r.tx || '').toLowerCase().match(/#[\p{L}\p{N}_]+/gu) || []);
       const norm = T.normalisasi(r.tx || '').mentah;
-      return { i, id: r.id != null ? r.id : i + 1, u: String(r.u || ('akun' + i)), age: +r.age || 0, fo: +r.fo || 0, fi: +r.fi || 0, tm: w ? w.tm : null, ts: w ? w.ts : null,
+      const numOrNull = v => v == null || v === '' || !Number.isFinite(+v) ? null : +v;
+      const u = String(r.u || ('akun' + i));
+      return { i, id: r.id != null ? r.id : i + 1, u, polaNama: r.polaNama == null ? polaNama(u) : !!r.polaNama, age: numOrNull(r.age), fo: numOrNull(r.fo), fi: numOrNull(r.fi), tm: w ? w.tm : null, ts: w ? w.ts : null,
         tx: r.tx || '', pv: r.pv || '', tk, isi: new Set(isi), bg, key: tk.join(' '), tagar, bantahan: T.debunkKuat.test(' ' + norm + ' ') };
     });
   }
@@ -89,7 +91,7 @@
   function koordinasi(anggota, d, sk, P) {
     const penguat = anggota.filter(i => !d[i].bantahan);
     const akun = new Map();
-    penguat.forEach(i => { const x = d[i]; if (!akun.has(x.u)) akun.set(x.u, { u: x.u, age: x.age, fo: x.fo, fi: x.fi, posts: [] }); akun.get(x.u).posts.push(i); });
+    penguat.forEach(i => { const x = d[i]; if (!akun.has(x.u)) akun.set(x.u, { u: x.u, polaNama: x.polaNama, age: x.age, fo: x.fo, fi: x.fi, posts: [] }); akun.get(x.u).posts.push(i); });
     const A = [...akun.values()], a = A.length;
     const bukti = [], keluarga = { teks: false, waktu: false, profil: false };
     let skor = 0;
@@ -112,14 +114,15 @@
     if (puncak >= 3 && rasio >= 0.5) tambah(20, 'K2', 'Serempak: ' + puncak + ' akun dalam ' + W + ' menit; ' + Math.round(rasio * 100) + '% unggahan punya pasangan akun lain dalam jendela', 'waktu');
     else if (puncak >= 3 && rasio >= 0.3) tambah(10, 'K2', 'Sebagian serempak: ' + puncak + ' akun dalam ' + W + ' menit (' + Math.round(rasio * 100) + '%)', 'waktu');
     // PROFIL
-    const baru = A.filter(x => x.age < P.akunBaruHari), muda = A.filter(x => x.age < P.akunMudaHari);
+    const usiaDiketahui = A.filter(x => x.age != null).map(x => x.age);
+    const baru = A.filter(x => x.age != null && x.age < P.akunBaruHari), muda = A.filter(x => x.age != null && x.age < P.akunMudaHari);
     if (baru.length >= 3 && baru.length / a >= 0.5) tambah(20, 'K3', baru.length + ' dari ' + a + ' akun berumur < ' + P.akunBaruHari + ' hari', 'profil');
     else if (muda.length >= 3 && muda.length / a >= 0.5) tambah(10, 'K3', muda.length + ' dari ' + a + ' akun berumur < ' + P.akunMudaHari + ' hari', 'profil');
-    const med = median(A.map(x => x.age)), seragam = A.filter(x => Math.abs(x.age - med) <= 1);
-    if (seragam.length >= 3 && seragam.length / a >= 0.5 && med < P.akunMudaHari) tambah(10, 'K4', seragam.length + ' akun berumur seragam (±1 hari dari ' + med + ')', 'profil');
-    const nama = A.filter(x => polaNama(x.u));
+    const med = usiaDiketahui.length ? median(usiaDiketahui) : null, seragam = med == null ? [] : A.filter(x => x.age != null && Math.abs(x.age - med) <= 1);
+    if (med != null && seragam.length >= 3 && seragam.length / a >= 0.5 && med < P.akunMudaHari) tambah(10, 'K4', seragam.length + ' akun berumur seragam (±1 hari dari ' + med + ')', 'profil');
+    const nama = A.filter(x => x.polaNama);
     if (nama.length >= 2 && nama.length / a >= 0.4) tambah(10, 'K5', nama.length + ' akun bernama berpola angka', 'profil');
-    const ff = A.filter(x => x.fi >= 100 && x.fi >= 10 * Math.max(x.fo, 1));
+    const ff = A.filter(x => x.fi != null && x.fo != null && x.fi >= 100 && x.fi >= 10 * Math.max(x.fo, 1));
     if (ff.length >= 2 && ff.length / a >= 0.4) tambah(5, 'K6', ff.length + ' akun dengan following ≫ follower', 'profil');
     // TAGAR
     const tg = Object.create(null); penguat.forEach(i => new Set(d[i].tagar).forEach(h => { (tg[h] = tg[h] || new Set()).add(d[i].u); }));
@@ -133,7 +136,7 @@
     if (fam <= 1 && skor > 40) { skor = 40; catatan.push('Dibatasi 40: hanya satu keluarga indikator.'); }
     skor = Math.min(100, Math.round(skor));
     const alternatif = [];
-    const tua = A.filter(x => x.age >= 365).length / a;
+    const tua = usiaDiketahui.length ? usiaDiketahui.filter(x => x >= 365).length / usiaDiketahui.length : 0;
     if (tua >= 0.5) alternatif.push('Mayoritas akun berumur ≥ 1 tahun: kampanye sah, relawan, atau komunitas yang berbagi pesan serupa.');
     alternatif.push('Peristiwa nyata atau berita bersama yang dikutip banyak orang dengan kalimat serupa.');
     if (!keluarga.profil) alternatif.push('Pesan berantai atau templat organik yang disalin warga (tanpa bukti keterkaitan akun).');
@@ -144,10 +147,10 @@
   // ---------- Skor akun (berlapis; tidak menyimpulkan dari teks/waktu saja) ----------
   function skorAkun(a, ctx) {
     const w = [], sinyalProfil = []; let s = 0;
-    if (a.age < PARAM.akunBaruHari) { s += 22; sinyalProfil.push('umur < 30 hari'); } else if (a.age < PARAM.akunMudaHari) { s += 10; sinyalProfil.push('umur < 90 hari'); }
-    if (a.fi >= 100 && a.fi >= 10 * Math.max(a.fo, 1)) { s += 12; sinyalProfil.push('following ≫ follower'); }
-    if (a.fo < 20) { s += 6; sinyalProfil.push('follower < 20'); }
-    if (polaNama(a.u)) { s += 12; sinyalProfil.push('nama berpola angka'); }
+    if (a.age != null && a.age < PARAM.akunBaruHari) { s += 22; sinyalProfil.push('umur < 30 hari'); } else if (a.age != null && a.age < PARAM.akunMudaHari) { s += 10; sinyalProfil.push('umur < 90 hari'); }
+    if (a.fi != null && a.fo != null && a.fi >= 100 && a.fi >= 10 * Math.max(a.fo, 1)) { s += 12; sinyalProfil.push('following ≫ follower'); }
+    if (a.fo != null && a.fo < 20) { s += 6; sinyalProfil.push('follower < 20'); }
+    if (a.polaNama) { s += 12; sinyalProfil.push('nama berpola angka'); }
     if (ctx.teks) { s += 28; w.push('teks nyaris sama dengan ' + (ctx.akunKlaster - 1) + ' akun lain'); }
     if (ctx.waktu) { s += 15; w.push('unggah serempak dengan akun lain'); }
     w.push(...sinyalProfil);

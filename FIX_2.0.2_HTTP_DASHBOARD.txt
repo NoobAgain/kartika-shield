@@ -1,0 +1,15 @@
+KARTIKA SHIELD 2.0.2 — HTTP DASHBOARD + MINI TV
+
+Perbaikan:
+- Collector kini menyajikan index.html dan aset lokal melalui http://127.0.0.1:8787/.
+- Endpoint API yang sudah ada tetap dipertahankan.
+- File tersembunyi, .env, dan path traversal tidak disajikan.
+- Mini Live TV menggunakan autoplay=1 dan mute=1, serta parameter origin halaman.
+- Kanal tetap tvOne, Kompas TV, Metro TV; TVRI tidak disertakan.
+
+Jalankan dari folder proyek:
+  npm run collector
+Lalu buka:
+  http://127.0.0.1:8787/
+
+Catatan: autoplay bersuara dapat diblokir browser. Jika penyiar membatasi embedding, video tetap tidak dapat diputar di iframe; gunakan tautan YouTube resmi.

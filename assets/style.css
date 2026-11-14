@@ -87,3 +87,396 @@ body:has(#ks){overflow:hidden}
 
 /* tab inti vs pendukung: pendukung lebih kecil, redup, dipisah garis */
 .ks .kdock button.sec{opacity:.7;font-size:.7rem;padding:8px 11px}.ks .kdock button.sec:hover,.ks .kdock button.sec.on{opacity:1}.ks .kdock button.sec:first-of-type,.ks .kdock button:not(.sec)+button.sec{margin-left:6px;box-shadow:-7px 0 0 -6px rgba(160,190,255,.45)}
+
+/* Mini TV mandiri: overlay kecil di kiri bawah peta, tidak mengubah panel/kanvas utama. */
+#mini-tv{position:fixed;left:16px;bottom:8px;width:min(340px,calc(100% - 32px));z-index:8;padding:10px;background:rgba(5,10,22,.94);border:1px solid rgba(120,160,255,.32);border-radius:12px;color:#e8efff;box-shadow:0 12px 36px rgba(0,0,0,.45);backdrop-filter:blur(12px)}
+#mini-tv[hidden],#mini-tv-show[hidden]{display:none!important}
+.mini-tv-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.72rem;letter-spacing:1.4px;margin-bottom:7px}
+.mini-tv-head button{border:1px solid rgba(160,190,255,.3);background:rgba(255,255,255,.08);color:#fff;border-radius:6px;width:28px;height:26px;cursor:pointer}
+.mini-tv-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;font-size:.72rem}
+.mini-tv-controls select{min-width:0;flex:1;background:#101a30;color:#e8efff;border:1px solid rgba(160,190,255,.3);border-radius:6px;padding:6px}
+.mini-tv-controls a{color:#8fd3ff;white-space:nowrap}
+.mini-tv-frame{aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden}
+.mini-tv-frame iframe{width:100%;height:100%;border:0;display:block}
+#mini-tv-status{font-size:.64rem;line-height:1.35;color:#aebbd5;margin:7px 0 0}
+#mini-tv-show{position:fixed;left:16px;bottom:8px;z-index:8;border:1px solid rgba(160,190,255,.35);background:rgba(5,10,22,.94);color:#e8efff;border-radius:9px;padding:9px 12px;font-size:.75rem;cursor:pointer}
+@media(max-width:760px){#mini-tv{left:8px;bottom:8px;width:min(270px,calc(100% - 16px));padding:8px}#mini-tv-show{left:8px;bottom:8px}}
+
+
+/* Identitas tunggal KARTIKA SHIELD: memakai logo lengkap dari assets/logo kartika.png */
+.kbr {
+  position: absolute;
+  left: 18px;
+  top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  z-index: 20;
+  max-width: 250px;
+}
+.kbr .klg {
+  display: block;
+  width: 230px;
+  height: 154px;
+  max-width: min(230px, 28vw);
+  object-fit: contain;
+  object-position: left center;
+}
+.kbr .kbt {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: -2px;
+}
+.kbr .kwm { display: none !important; }
+
+@media (max-width: 700px) {
+  .kbr { left: 10px; top: 8px; max-width: 205px; }
+  .kbr .klg { width: 175px; height: 117px; max-width: 44vw; }
+}
+
+
+/* Logo header alignment: compact, top-left, no overlap with threat panel */
+.ks .kbr {
+  left: 8px !important;
+  top: 8px !important;
+  width: 410px;
+  max-width: 410px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  z-index: 30;
+}
+.ks .kbr .klg {
+  width: 150px !important;
+  height: 100px !important;
+  max-width: 150px !important;
+  flex: 0 0 150px;
+  object-fit: contain;
+  object-position: left center;
+}
+.ks .kbr .kbt {
+  min-width: 0;
+  max-width: 235px;
+  margin: 0;
+  gap: 5px;
+}
+.ks .kbr .kbt > span {
+  font-size: .82rem;
+  line-height: 1.25;
+  letter-spacing: 1.5px;
+}
+.ks .kbr .kbm {
+  margin-top: 2px;
+  gap: 7px;
+}
+@media (max-width: 760px) {
+  .ks .kbr {
+    left: 6px !important;
+    top: 6px !important;
+    width: min(320px, calc(100vw - 12px));
+    max-width: min(320px, calc(100vw - 12px));
+    gap: 7px;
+  }
+  .ks .kbr .klg {
+    width: 104px !important;
+    height: 72px !important;
+    max-width: 104px !important;
+    flex-basis: 104px;
+  }
+  .ks .kbr .kbt > span { font-size: .68rem; letter-spacing: 1px; }
+  .ks .kbr .kbg { font-size: .54rem !important; padding: 2px 7px !important; }
+}
+
+
+/* Share data: fitur tambahan terisolasi, tidak mengubah layout menu utama. */
+.ks-share-card{max-width:560px;margin:18px auto 22px;padding:14px 16px;background:rgba(5,10,22,.94);border:1px solid rgba(120,160,255,.32);border-radius:10px;color:#e8efff;text-align:center;box-shadow:0 8px 26px rgba(0,0,0,.24)}
+.ks-share-title{font-size:.82rem;letter-spacing:1.1px;font-weight:700;margin-bottom:8px}
+.ks-share-note,.ks-share-status{font-size:.68rem;line-height:1.45;color:#aebbd5;margin:6px 0 10px}
+.ks-share-actions{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap}
+.ks-share-link{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:48px;padding:4px 7px;border:0;background:transparent;color:#75b99a;text-decoration:none;cursor:pointer;font:inherit}
+.ks-share-link span{font-size:1.35rem;line-height:1.2;font-weight:700}
+.ks-share-link small{font-size:.62rem;color:#d7e2f5}
+.ks-share-link:hover{color:#9de5c1;transform:translateY(-1px)}
+.ks-share-link:focus-visible{outline:2px solid #75b99a;outline-offset:3px;border-radius:5px}
+.ks-share-status{min-height:1em;margin-bottom:0}
+@media(max-width:760px){.ks-share-card{margin:14px 8px;padding:12px}.ks-share-actions{gap:12px}}
+
+/* Share Data tampil di dalam kanvas peta (body dashboard memakai overflow:hidden). */
+#ks #ks-share-data{position:absolute;right:336px;bottom:122px;width:min(286px,calc(100% - 360px));max-width:286px;margin:0;padding:10px 12px;z-index:7;text-align:left;background:rgba(5,10,22,.96);border-color:rgba(120,160,255,.42);box-shadow:0 10px 28px rgba(0,0,0,.42)}
+#ks #ks-share-data .ks-share-title{font-size:.76rem;margin-bottom:5px}
+#ks #ks-share-data .ks-share-note{font-size:.61rem;margin:3px 0 6px}
+#ks #ks-share-data .ks-share-actions{justify-content:flex-start;gap:9px}
+#ks #ks-share-data .ks-share-link{min-width:42px;padding:3px 5px}
+#ks #ks-share-data .ks-share-link span{font-size:1.18rem}
+#ks #ks-share-data .ks-share-link small{font-size:.58rem}
+#ks #ks-share-data .ks-share-status{font-size:.58rem;margin:5px 0 0}
+@media(max-width:760px){#ks #ks-share-data{right:8px;bottom:120px;width:min(210px,calc(100% - 16px));max-width:210px;padding:8px 9px}#ks #ks-share-data .ks-share-note{display:none}#ks #ks-share-data .ks-share-actions{gap:5px}}
+
+
+/* Ikon berbagi sosial diposisikan tepat di bawah daftar TIPE ANCAMAN. */
+#ks .kat .ks-social-platforms{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:14px;
+  margin:9px 0 0 2px;
+  padding:5px 7px;
+  width:max-content;
+  max-width:100%;
+  background:rgba(5,10,22,.78);
+  border:1px solid rgba(110,150,255,.24);
+  border-radius:7px;
+}
+#ks .kat .ks-social-platforms .ks-share-link{
+  min-width:42px;
+  padding:3px 5px;
+}
+#ks .kat .ks-social-platforms .ks-share-link span{
+  font-size:1.25rem;
+}
+#ks .kat .ks-social-platforms .ks-share-link small{
+  font-size:.59rem;
+}
+@media(max-width:760px){
+  #ks .kat .ks-social-platforms{gap:9px;margin-top:7px}
+}
+
+
+
+/* Filter media Peta Peringatan Dini — tema gelap konsisten */
+#newsSource,#newsStatus{
+  color:#dce8f7!important;
+  background:#111b2c!important;
+  border:1px solid rgba(117,151,194,.38)!important;
+  border-radius:10px!important;
+  color-scheme:dark;
+}
+#newsSource option,#newsStatus option{
+  color:#dce8f7!important;
+  background:#111b2c!important;
+}
+#newsSource:focus,#newsStatus:focus{
+  outline:0;border-color:#70b9c5!important;
+  box-shadow:0 0 0 3px rgba(91,179,190,.13)
+}
+
+
+/* Pusat Data: filter arsip berita */
+#xnewsPeriod,#xnewsMonth,#xnewsFrom,#xnewsTo,#xnewsSource,#xnewsQuery{
+ color:#dce8f7!important;background:#111b2c!important;
+ border:1px solid rgba(117,151,194,.38)!important;border-radius:9px!important;
+ color-scheme:dark
+}
+#xnewsPeriod option,#xnewsSource option{color:#dce8f7;background:#111b2c}
+#xnewsList .bti{background:linear-gradient(120deg,rgba(25,39,61,.72),rgba(18,28,45,.8));border:1px solid rgba(117,151,194,.2);border-left-width:3px;border-radius:10px;padding:10px 12px}
+#xnewsList a{color:#91bff2}
+#xnewsLoad:disabled{opacity:.55;cursor:wait}
+
+
+/* UI cleanup requested: remove explanatory copy and show Mini TV as a clean player */
+.kbm small{display:none!important}
+#mini-tv .mini-tv-head,
+#mini-tv .mini-tv-controls a,
+#mini-tv #mini-tv-status,
+#mini-tv-show{display:none!important}
+#mini-tv{width:min(420px,calc(100% - 32px));padding:8px}
+#mini-tv .mini-tv-controls{display:block;margin:0 0 7px}
+#mini-tv .mini-tv-controls select{display:block;width:100%;min-height:36px;font-size:.82rem}
+#mini-tv .mini-tv-frame{width:100%;aspect-ratio:16/9;border-radius:8px}
+@media(max-width:760px){
+ #mini-tv{left:8px;bottom:8px;width:min(360px,calc(100% - 16px));padding:7px}
+}
+
+/* KARTIKA SHIELD — frosted-glass PIN access screen */
+#ks-pin-screen{
+ position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;
+ padding:24px;overflow:auto;color:#eef5ff;font-family:inherit;
+ background:rgba(2,8,22,.48);
+ -webkit-backdrop-filter:blur(10px) saturate(.78);
+ backdrop-filter:blur(10px) saturate(.78);
+ opacity:1;transition:opacity .38s ease
+}
+#ks-pin-screen .ks-pin-backdrop{
+ position:fixed;inset:0;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 38%,rgba(20,143,220,.12),transparent 52%),
+ linear-gradient(135deg,rgba(4,12,30,.12),rgba(2,6,18,.24))
+}
+#ks-pin-screen .ks-pin-card{
+ position:relative;width:min(715px,100%);box-sizing:border-box;
+ padding:26px clamp(24px,4.3vw,68px) 30px;
+ border:1px solid rgba(205,226,255,.34);border-radius:30px;
+ background:linear-gradient(145deg,rgba(24,39,68,.58),rgba(8,19,39,.64) 58%,rgba(17,35,61,.58));
+ -webkit-backdrop-filter:blur(20px) saturate(1.12);
+ backdrop-filter:blur(20px) saturate(1.12);
+ box-shadow:0 28px 90px rgba(0,0,0,.48),0 0 0 1px rgba(255,255,255,.045) inset,0 0 46px rgba(0,157,255,.12);
+ text-align:center;overflow:hidden
+}
+#ks-pin-screen .ks-pin-card:before{
+ content:"";position:absolute;left:0;right:0;top:0;height:3px;
+ background:linear-gradient(90deg,#12d9ec,#318bff,#a66cff,#12d9ec)
+}
+#ks-pin-screen .ks-pin-mark{
+ position:relative;width:min(360px,82%);height:220px;margin:0 auto 5px;
+ display:grid;place-items:center;background:transparent;border:0;box-shadow:none
+}
+#ks-pin-screen .ks-pin-logo{
+ display:block;width:100%;height:100%;object-fit:contain;opacity:.91;
+ filter:drop-shadow(0 8px 22px rgba(0,174,255,.23))
+}
+#ks-pin-screen .ks-pin-shield{display:none}
+#ks-pin-screen .ks-pin-pulse{display:none}
+#ks-pin-screen .ks-pin-kicker{
+ font-size:11px;letter-spacing:3px;font-weight:800;color:#75ddff;
+ margin:0 auto 8px;line-height:1.5
+}
+#ks-pin-screen .ks-pin-kicker span{color:#f2b84b;padding:0 4px}
+#ks-pin-screen h1{
+ font-size:29px;line-height:1.22;margin:8px 0 10px;color:#f5f8ff;
+ letter-spacing:.4px
+}
+#ks-pin-screen .ks-pin-desc{
+ font-size:16px;line-height:1.6;color:#c0ccdd;margin:0 0 34px
+}
+#ks-pin-screen .ks-pin-dots{display:none!important}
+#ks-pin-screen .ks-pin-dots i{display:none}
+#ks-pin-screen .ks-pin-input{
+ display:block!important;position:relative!important;width:100%!important;height:70px!important;
+ margin:0 auto 28px!important;padding:0 24px!important;box-sizing:border-box!important;
+ opacity:1!important;pointer-events:auto!important;left:auto!important;top:auto!important;
+ border:1px solid rgba(218,232,255,.68)!important;border-radius:16px!important;
+ background:rgba(5,16,34,.38)!important;color:#f4f8ff!important;
+ text-align:left!important;font-size:24px!important;letter-spacing:12px!important;
+ outline:none!important;box-shadow:inset 0 2px 10px rgba(0,0,0,.18),0 0 18px rgba(0,157,255,.07)!important
+}
+#ks-pin-screen .ks-pin-input:focus{
+ border-color:#43d8f4!important;
+ box-shadow:0 0 0 3px rgba(53,216,244,.13),0 0 24px rgba(0,157,255,.16)!important
+}
+#ks-pin-screen .ks-pin-input::placeholder{
+ letter-spacing:1px;color:#aebbd0;font-size:16px
+}
+#ks-pin-screen .ks-pin-error{height:18px;margin:-18px 0 8px;color:#ff8795;font-size:12px}
+#ks-pin-screen .ks-pin-pad{display:none!important}
+#ks-pin-screen .ks-pin-submit{
+ width:100%;height:70px;border:1px solid rgba(63,205,255,.65);border-radius:15px;
+ background:linear-gradient(100deg,#0c9fc9,#087ec4 58%,#176fb1);
+ color:#fff;font-size:18px;font-weight:900;letter-spacing:1.1px;
+ box-shadow:0 10px 28px rgba(0,153,220,.23);cursor:pointer;
+ transition:filter .15s,transform .15s
+}
+#ks-pin-screen .ks-pin-submit:hover{filter:brightness(1.12)}
+#ks-pin-screen .ks-pin-submit:active{transform:scale(.99)}
+#ks-pin-screen .ks-pin-submit span{font-size:25px;margin-left:10px;vertical-align:-2px}
+#ks-pin-screen .ks-pin-foot{
+ margin-top:28px;padding:18px 0 4px;border-top:1px solid rgba(180,205,238,.24);
+ font-size:15px;color:#c0ccdd;letter-spacing:.15px
+}
+#ks-pin-screen .ks-pin-lock-icon{color:#b9d8f2;margin-right:8px}
+#ks-pin-screen.ks-pin-exit{opacity:0;pointer-events:none}
+#ks-pin-screen .ks-pin-shake{animation:ks-pin-shake .32s ease}
+body.ks-pin-locked{overflow:hidden!important;user-select:none}
+@keyframes ks-pin-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
+@media(max-width:760px){
+ #ks-pin-screen{padding:16px}
+ #ks-pin-screen .ks-pin-card{width:min(560px,100%);padding:22px 24px 24px;border-radius:24px}
+ #ks-pin-screen .ks-pin-mark{width:min(300px,82%);height:180px}
+ #ks-pin-screen h1{font-size:25px}
+ #ks-pin-screen .ks-pin-desc{font-size:14px;margin-bottom:24px}
+ #ks-pin-screen .ks-pin-input,#ks-pin-screen .ks-pin-submit{height:60px!important}
+ #ks-pin-screen .ks-pin-submit{font-size:15px}
+ #ks-pin-screen .ks-pin-foot{font-size:12px;margin-top:22px}
+}
+@media(max-height:700px){
+ #ks-pin-screen .ks-pin-card{padding-top:16px;padding-bottom:18px}
+ #ks-pin-screen .ks-pin-mark{height:150px;width:min(260px,75%)}
+ #ks-pin-screen .ks-pin-desc{margin-bottom:18px}
+ #ks-pin-screen .ks-pin-input{height:56px!important;margin-bottom:16px!important}
+ #ks-pin-screen .ks-pin-submit{height:56px}
+ #ks-pin-screen .ks-pin-foot{margin-top:16px;padding-top:12px}
+}
+@media(prefers-reduced-motion:reduce){#ks-pin-screen *,#ks-pin-screen *:before{animation:none!important;transition:none!important}}
+
+
+/* KARTIKA SHIELD — compact translucent login inspired by the supplied reference */
+#ks-pin-screen{
+  padding:20px!important;
+  background:rgba(3,8,18,.34)!important;
+  -webkit-backdrop-filter:blur(5px) saturate(.82)!important;
+  backdrop-filter:blur(5px) saturate(.82)!important;
+}
+#ks-pin-screen .ks-pin-backdrop{
+  background:
+    linear-gradient(180deg,rgba(2,7,17,.28),rgba(2,7,17,.42)),
+    radial-gradient(ellipse at 50% 42%,rgba(11,139,203,.10),transparent 58%)!important;
+}
+#ks-pin-screen .ks-pin-card{
+  width:min(430px,calc(100vw - 32px))!important;
+  padding:24px 34px 22px!important;
+  border:1px solid rgba(190,218,245,.30)!important;
+  border-radius:18px!important;
+  background:linear-gradient(145deg,rgba(12,25,43,.48),rgba(5,14,28,.42) 58%,rgba(11,25,43,.46))!important;
+  -webkit-backdrop-filter:blur(13px) saturate(1.05)!important;
+  backdrop-filter:blur(13px) saturate(1.05)!important;
+  box-shadow:0 18px 55px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.07)!important;
+}
+#ks-pin-screen .ks-pin-card:before{height:2px!important}
+#ks-pin-screen .ks-pin-mark{
+  width:min(190px,72%)!important;height:126px!important;margin:0 auto 4px!important;
+}
+#ks-pin-screen .ks-pin-logo{
+  opacity:.96!important;
+  filter:drop-shadow(0 5px 14px rgba(0,160,230,.20))!important;
+}
+#ks-pin-screen .ks-pin-kicker{
+  font-size:10px!important;letter-spacing:2.2px!important;margin:0 auto 5px!important;
+}
+#ks-pin-screen h1{
+  font-size:23px!important;line-height:1.2!important;margin:5px 0 7px!important;
+  letter-spacing:.1px!important;
+}
+#ks-pin-screen .ks-pin-desc{
+  font-size:13px!important;line-height:1.5!important;margin:0 0 20px!important;
+  color:rgba(226,236,248,.82)!important;
+}
+#ks-pin-screen .ks-pin-input{
+  height:50px!important;margin:0 auto 15px!important;padding:0 16px!important;
+  border-radius:5px!important;background:rgba(2,10,22,.48)!important;
+  border:1px solid rgba(206,225,245,.54)!important;
+  font-size:18px!important;letter-spacing:8px!important;
+  box-shadow:inset 0 1px 5px rgba(0,0,0,.24)!important;
+}
+#ks-pin-screen .ks-pin-input::placeholder{
+  font-size:13px!important;letter-spacing:.2px!important;color:rgba(216,228,242,.65)!important;
+}
+#ks-pin-screen .ks-pin-submit{
+  height:50px!important;border-radius:5px!important;margin-top:1px!important;
+  font-size:13px!important;letter-spacing:.8px!important;
+  background:linear-gradient(100deg,#078fbe,#0879b9 58%,#126aa8)!important;
+  box-shadow:0 7px 18px rgba(0,124,190,.20)!important;
+}
+#ks-pin-screen .ks-pin-submit span{font-size:19px!important}
+#ks-pin-screen .ks-pin-foot{
+  margin-top:16px!important;padding:12px 0 0!important;
+  font-size:11px!important;border-top:1px solid rgba(190,215,240,.20)!important;
+  color:rgba(216,228,242,.78)!important;
+}
+#ks-pin-screen .ks-pin-error{margin:-12px 0 5px!important;height:14px!important;font-size:11px!important}
+@media(max-width:520px){
+  #ks-pin-screen{padding:14px!important}
+  #ks-pin-screen .ks-pin-card{width:min(390px,calc(100vw - 28px))!important;padding:20px 22px 18px!important}
+  #ks-pin-screen .ks-pin-mark{width:160px!important;height:108px!important}
+  #ks-pin-screen h1{font-size:21px!important}
+}
+@media(max-height:620px){
+  #ks-pin-screen{padding:10px!important}
+  #ks-pin-screen .ks-pin-card{padding-top:12px!important;padding-bottom:12px!important}
+  #ks-pin-screen .ks-pin-mark{height:88px!important;width:140px!important}
+  #ks-pin-screen .ks-pin-desc{margin-bottom:12px!important}
+  #ks-pin-screen .ks-pin-input{height:44px!important;margin-bottom:10px!important}
+  #ks-pin-screen .ks-pin-submit{height:44px!important}
+  #ks-pin-screen .ks-pin-foot{margin-top:10px!important;padding-top:8px!important}
+}

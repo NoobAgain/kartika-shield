@@ -1,0 +1,21 @@
+'use strict';
+const assert = require('node:assert/strict');
+const { analyzeNews } = require('../collector/services/news-analysis');
+const base = { source: 'Media A', sourceHost: 'media-a.id', url: 'https://media-a.id/a', publishedAt: '2026-11-12T10:00:00Z', summary: 'Ringkasan berita yang cukup panjang untuk memberi konteks tambahan tentang peristiwa dan informasi yang sedang diberitakan kepada masyarakat luas.' };
+let a = analyzeNews({ ...base, title: 'Pemerintah umumkan jadwal layanan publik terbaru', risk: 5 }, { now: 1000 });
+assert.equal(a.status, 'AMAN');
+assert.equal(a.method, 'local_rules_preliminary');
+assert.ok(a.confidenceScore > 40 && a.confidenceScore <= 88);
+a = analyzeNews({ ...base, title: 'Warga diminta waspada setelah banjir meluas di sejumlah wilayah', risk: 45 }, { now: 1000 });
+assert.ok(['WASPADA', 'SIAGA'].includes(a.status));
+assert.ok(a.dimensions.some(x => x.key === 'bencana_darurat'));
+a = analyzeNews({ ...base, title: 'Aksi demonstrasi damai berlangsung hari ini, massa menyampaikan kritik', summary: 'Aksi damai dan kritik berlangsung tertib tanpa laporan kekerasan atau korban.', risk: 90 }, { now: 1000 });
+assert.equal(a.status, 'AMAN');
+assert.ok(a.riskScore <= 24);
+a = analyzeNews({ ...base, title: 'Ledakan dan penembakan sedang berlangsung malam ini', province: 'JK', independentSources: 1, risk: 99 }, { now: 1000 });
+assert.notEqual(a.status, 'KRITIS'); // one source cannot trigger critical
+assert.equal(a.humanReviewRequired, false);
+a = analyzeNews({ ...base, title: 'Ledakan dan penembakan sedang berlangsung malam ini', province: 'JK', independentSources: 2, risk: 99 }, { now: 1000 });
+assert.equal(a.status, 'KRITIS');
+assert.equal(a.humanReviewRequired, true);
+console.log('PASS news analysis: informational, dimensions, peaceful-protest guard, critical corroboration gate');

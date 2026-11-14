@@ -1,3 +1,4 @@
+const BUZZER_PV = new Set(["AC", "SU", "SB", "RI", "KR", "JA", "BE", "SS", "BB", "LA", "BT", "JK", "JB", "JT", "YO", "JI", "BA", "NB", "NT", "KB", "KT", "KS", "KI", "KU", "SA", "GO", "ST", "SR", "SN", "SG", "MU", "MA", "PD", "PB", "PA", "PH", "PP", "PS"]);
 // Deteksi Buzzer & Peta Narasi/Pengaruh: antarmuka untuk KS.narasi (klaster, koordinasi berlapis, graf, kronologi)
 // dan KS.dini (peringatan dini kognitif). Skor adalah INDIKATOR korelasi, bukan bukti buzzer atau niat pelaku.
 const SMP=["patriot_77123,5,8,1020,19:02,Pemerintah gagal total! Bangsa kita dijual ke asing #IndonesiaDijual","rakyat_99231,9,15,870,19:03,Pemerintah gagal total, bangsa kita dijual ke asing!! #IndonesiaDijual","user88412093,3,4,1300,19:03,Pemerintah gagal total bangsa kita dijual ke asing #IndonesiaDijual #SadarBangsa","nusa_bela_55610,12,22,990,19:05,Pemerintah gagal total! bangsa kita dijual ke asing #IndonesiaDijual","garuda_sejati_31,20,40,1100,19:06,WASPADA bangsa kita dijual ke asing pemerintah gagal total #IndonesiaDijual","siti_rahma,2100,540,380,19:10,Hari ini ngopi di warung dekat kampus, enak banget kopi tubruknya","budi.santoso,1650,820,410,19:34,Ada yang tahu kenapa harga cabai naik minggu ini?","made_wirawan,3000,1200,600,20:15,Gotong royong bersih sungai di desa kami berjalan lancar hari ini","anon_66120987,4,3,1500,21:40,Kelompok tertentu mau kuasai desa kita! Sebarkan sebelum dihapus #BelaAgama","suara_umat_44120,7,10,920,21:41,Kelompok tertentu mau menguasai desa kita, sebarkan sebelum dihapus! #BelaAgama","pejuang_71299,11,19,1010,21:42,KELOMPOK TERTENTU mau kuasai desa kita sebarkan sebelum dihapus #BelaAgama","ayu_lestari,900,300,250,22:05,Terima kasih tetangga yang sudah bantu pindahan kemarin"];
@@ -24,7 +25,7 @@ function parseBV(t) {
     const w = KS.narasi.parseWaktu(wk); if (!w) return bad('waktu tidak valid');
     let tail = p.slice(5).join(',').trim(), pv = '';
     const mk = tail.match(/\|([A-Za-z]{2})\s*$/);
-    if (mk) { const kd = mk[1].toUpperCase(); if (PV.some(x => x.c === kd)) { pv = kd; tail = tail.replace(/\|[A-Za-z]{2}\s*$/, '') } else if (mk[1] === kd) { R.warn.push({ n: no, w: 'kode provinsi "' + kd + '" tidak dikenal, dikosongkan' }); tail = tail.replace(/\|[A-Za-z]{2}\s*$/, '') } }
+    if (mk) { const kd = mk[1].toUpperCase(); if (BUZZER_PV.has(kd)) { pv = kd; tail = tail.replace(/\|[A-Za-z]{2}\s*$/, '') } else if (mk[1] === kd) { R.warn.push({ n: no, w: 'kode provinsi "' + kd + '" tidak dikenal, dikosongkan' }); tail = tail.replace(/\|[A-Za-z]{2}\s*$/, '') } }
     tail = tail.trim().replace(/^"(.*)"$/, '$1').replace(/\s+/g, ' ');
     if (tail.length < 3) return bad('teks kosong atau terlalu pendek');
     if (tail.length > 2000) { tail = tail.slice(0, 2000); R.warn.push({ n: no, w: 'teks dipotong 2000 karakter' }) }
@@ -47,7 +48,7 @@ function runB(rows) {
   const N = KS.narasi.analisis(rows), D = KS.dini.peringatanDini(N), por = new Map(N.akun.map(a => [a.u, a]));
   const cls = N.klaster.filter(k => k.akun >= 3).map(k => {
     const ix = k.idx.slice(), us = new Set(ix.map(i => rows[i].u)), ak = [...us].map(u => N._d.byU.get(u));
-    const kd = k.koordinasi.bukti.map(b => b.kode), nw = ak.filter(a => a.age < 30).length;
+    const kd = k.koordinasi.bukti.map(b => b.kode), nw = ak.filter(a => a.age != null && a.age < 30).length;
     const dis = typeof disarmCluster === 'function' ? disarmCluster(rows[ix[0]].tx, { copy: true, accounts: us.size, burst: !!k.koordinasi.keluarga.waktu, tags: (k.tagar[0] || [0, 0])[1], newAccounts: nw, sameAge: kd.includes('K4'), numericNames: kd.includes('K5') }) : [];
     return { ix, us, src: ix[0], srcRow: rows[ix[0]], dis, k };
   });
@@ -119,7 +120,7 @@ ${dis.length ? `<h3>Taktik/teknik DISARM (isyarat)</h3>${dis.map(d => `<span cla
 <div class="row"><button class="btn" id="bsit">Laporan situasi kognitif</button><button class="btn alt" id="bcp">Salin ringkasan</button><button class="btn alt" id="bgj">Ekspor hasil (JSON)</button></div><div id="bout" class="bti hidden" style="margin-top:10px;white-space:pre-wrap"></div></div>`;
   bGraf(N);
   $("#bcp").onclick = () => { try { navigator.clipboard.writeText(lastB + "\n" + akunU.filter(a => a.s >= 40).map(a => a.u + " (" + a.s + "): " + a.w.join(", ")).join("\n")); $("#bcp").textContent = "Tersalin" } catch (e) { } };
-  $("#bsit").onclick = () => { const o = $("#bout"); o.classList.remove("hidden"); o.textContent = KS.dini.laporanTeks(KS.dini.laporanSituasi(N, D, { namaWilayah: Object.fromEntries(PV.map(p => [p.c, p.n || p.c])) })) };
+  $("#bsit").onclick = () => { const o = $("#bout"); o.classList.remove("hidden"); o.textContent = KS.dini.laporanTeks(KS.dini.laporanSituasi(N, D, { namaWilayah: Object.fromEntries(Array.from(BUZZER_PV, c => [c, window.KS_KODAM_SCOPE?.nameForProvince(c) || c])) })) };
   $("#bgj").onclick = () => { const { _d, _sk, ...ringan } = N; dlFile('analisis-narasi-' + stamp() + '.json', new Blob([JSON.stringify({ narasi: ringan, peringatanDini: D }, null, 1)], { type: 'application/json' })) };
 }
 
@@ -129,12 +130,12 @@ $("#bgo").onclick = () => {
   try { showB(lastR = runB(R.rows)); kBuzz(lastR) } catch (e) { $("#bres").innerHTML = '<div class="card">Analisis gagal: ' + esc(e && e.message || e) + '</div>' }
 };
 
-// Kirim ke Peta Dini: satu catatan per (provinsi, narasi); risiko = skor peringatan dini narasi
+// Kirim ke Peta Dini: sumber tetap menyimpan kode provinsi; dashboard mengagregasikan hasil pada tingkat Kodam.
 $('#bpm').onclick = () => {
   if (!lastR) return; const g = {};
   lastR.N.klaster.filter(k => k.akun >= 3).forEach(k => {
     const e = lastR.D.find(x => x.klaster === k.id), t = lastR.rows[k.idx[0]].tx;
-    k.idx.forEach(i => { const r = lastR.rows[i]; if (!PV.some(x => x.c === r.pv)) return; const o = g[r.pv + '|' + k.id] = g[r.pv + '|' + k.id] || { p: r.pv, i: t, v: 0, r: e ? e.skor : 0, s: !!k.sara }; o.v++ });
+    k.idx.forEach(i => { const r = lastR.rows[i]; if (!BUZZER_PV.has(r.pv)) return; const o = g[r.pv + '|' + k.id] = g[r.pv + '|' + k.id] || { p: r.pv, i: t, v: 0, r: e ? e.skor : 0, s: !!k.sara }; o.v++ });
   });
   const L = Object.values(g); if (!L.length) { $('#bpm').textContent = 'Tambahkan |KODE di tiap baris'; return }
   L.forEach(o => mr.push({ p: o.p, i: o.i, v: o.v, r: o.r, s: o.s })); svM(); renderM(); document.querySelector('[data-t=m]').click();
@@ -156,3 +157,118 @@ $('#bfile').onchange = e => {
   if (f.size > 5e6) { $('#bq').innerHTML = '<div class="card">Berkas lebih dari 5 MB. Pecah menjadi beberapa berkas.</div>'; return }
   f.text().then(t => { $('#bin').value = t.replace(/^\uFEFF/, ''); bRep(parseBV(t)) });
 };
+
+// ---------- Pengumpulan otomatis Bluesky -> analisis narasi lokal ----------
+const BA_STORE = 'ks_buzzer_auto_v1';
+let bAutoItems = [], bAutoSeen = new Set(), bAutoSource = null, bAutoStatus = null;
+try { bAutoItems = JSON.parse(localStorage.getItem(BA_STORE) || '[]').filter(x => x && x.id && x.text); bAutoItems.forEach(x => bAutoSeen.add(x.id)); } catch (e) { bAutoItems = []; }
+const bAutoBase = () => location.protocol === 'http:' || location.protocol === 'https:' ? location.origin : 'http://127.0.0.1:8787';
+const bAutoApi = async (path, body) => { const r = await fetch(bAutoBase() + path, { method: body ? 'POST' : 'GET', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status)); return j; };
+function bAutoRenderSources() {
+  const el = $('#bautosources'); if (!el) return;
+  const rows = bAutoItems.slice(0, 20);
+  el.innerHTML = `<b>${bAutoItems.length}</b> unggahan tersimpan lokal · menampilkan ${rows.length} terbaru:<div style="margin-top:5px">${rows.map(x => `<div style="padding:4px 0;border-bottom:1px solid var(--line)">• <b>${esc(x.account || 'akun anonim')}</b> · ${esc(x.createdAt || 'waktu tidak tersedia')} · ${esc(String(x.text || '').slice(0, 150))}${String(x.text || '').length > 150 ? '…' : ''}<br><span class=note>${x.postUrl ? `<a href="${esc(x.postUrl)}" target="_blank" rel="noopener noreferrer">Buka unggahan asli</a>` : 'tautan sumber tidak tersedia'} · dikumpulkan ${esc(x.collectedAt || 'waktu tidak tersedia')}</span></div>`).join('') || 'Belum ada unggahan yang diterima.'}</div>`;
+}
+function bAutoRows() {
+  const excluded = { missingProfile: 0, invalidTime: 0 }, rows = [];
+  for (const x of bAutoItems) {
+    if (x.ageDays == null || x.followers == null || x.following == null || !Number.isFinite(+x.ageDays) || !Number.isFinite(+x.followers) || !Number.isFinite(+x.following)) excluded.missingProfile++;
+    const w = KS.narasi.parseWaktu(x.createdAt || ''); if (!w) { excluded.invalidTime++; continue; }
+    if (!x.id || !x.account || !String(x.text || '').trim()) continue;
+    rows.push({ id: x.id, u: x.account, polaNama: x.namePattern === true, age: x.ageDays == null || !Number.isFinite(+x.ageDays) ? null : +x.ageDays, fo: x.followers == null || !Number.isFinite(+x.followers) ? null : +x.followers, fi: x.following == null || !Number.isFinite(+x.following) ? null : +x.following, tm: w.tm, ts: w.ts, wk: x.createdAt, tx: String(x.text || '').slice(0, 2000), pv: BUZZER_PV.has(x.provinceCode) ? x.provinceCode : '' });
+  }
+  return { rows, excluded };
+}
+function bAutoAnalyze(meta = {}) {
+  const { rows, excluded } = bAutoRows();
+  bAutoRenderSources();
+  if (rows.length < 3) {
+    $('#bres').innerHTML = `<div class="card"><b>Analisis otomatis belum dapat dijalankan.</b><p>Minimal 3 unggahan dengan waktu yang valid diperlukan.</p>${meta.lastErrors ? `<p class=note>Pengambilan online gagal pada ${meta.lastErrors} kata kunci: ${esc(meta.lastError || 'periksa status Collector')}.</p>` : ''}<p class=note>${rows.length} valid · ${excluded.missingProfile} profil tidak lengkap (tetap dianalisis tanpa sinyal profil) · ${excluded.invalidTime} waktu tidak valid.</p></div>`;
+    $('#bautost').textContent = meta.lastErrors && !meta.lastFound ? `Pengambilan gagal: ${meta.lastError || meta.lastErrors + ' kata kunci gagal'} · arsip lama tidak dianggap data baru` : `Belum cukup data valid untuk analisis · ${rows.length} valid dari ${bAutoItems.length} tersimpan`;
+    return false;
+  }
+  try {
+    const r = runB(rows); lastR = r; showB(r); kBuzz(r);
+    const metaLine = document.createElement('p'); metaLine.className = 'note';
+    const runAt = meta.lastRun ? new Date(meta.lastRun).toLocaleString('id-ID') : '';
+    const mode = meta.restored ? 'Analisis ulang arsip lokal' : (meta.automatic ? 'Siklus pengumpulan otomatis' : 'Pencarian manual');
+    metaLine.textContent = `${mode} · ${rows.length} unggahan dianalisis dari ${bAutoItems.length} tersimpan · ${meta.lastFound == null ? 'jumlah unggahan baru tidak diketahui' : meta.lastFound + ' unggahan baru pada pencarian ini'}${runAt ? ' · pencarian ' + runAt : ''} · ${excluded.missingProfile} profil tidak lengkap (sinyal profil dinonaktifkan) · ${excluded.invalidTime} waktu tidak valid dilewati${meta.lastErrors ? ' · PERINGATAN: ' + meta.lastErrors + ' kata kunci gagal (' + (meta.lastError || 'lihat status Collector') + ')' : ''}`;
+    $('#bres').prepend(metaLine);
+    if (meta.lastErrors) $('#bautost').textContent = `Analisis selesai dengan peringatan · ${rows.length} unggahan dianalisis · ${meta.lastErrors} kata kunci gagal`;
+    else if (meta.lastFound === 0) $('#bautost').textContent = `Analisis selesai dari arsip lokal · tidak ada unggahan baru pada pencarian terakhir · ${rows.length} dianalisis`;
+    else $('#bautost').textContent = `Analisis selesai · ${rows.length} unggahan dianalisis · ${meta.lastFound == null ? 'arsip lokal' : meta.lastFound + ' unggahan baru'}${runAt ? ' · ' + runAt : ''}`;
+    return true;
+  } catch (e) { $('#bautost').textContent = 'Analisis otomatis gagal: ' + (e.message || e); $('#bres').innerHTML = `<div class="card">Analisis otomatis gagal: ${esc(e.message || e)}</div>`; return false; }
+}
+function bAutoIngest(items, opts = {}) {
+  let added = 0;
+  for (const x of (Array.isArray(items) ? [...items].reverse() : [])) {
+    if (!x || !x.id || !x.text || bAutoSeen.has(x.id)) continue;
+    bAutoSeen.add(x.id); bAutoItems.unshift(x); added++;
+  }
+  if (added) {
+    bAutoItems = bAutoItems.slice(0, 500); bAutoSeen = new Set(bAutoItems.map(x => x.id));
+    try { localStorage.setItem(BA_STORE, JSON.stringify(bAutoItems)); } catch (e) { $('#bautost').textContent = 'Penyimpanan lokal penuh; data baru tetap dianalisis pada sesi ini.'; }
+  }
+  bAutoRenderSources();
+  if (added && opts.analyze !== false) bAutoAnalyze(opts.meta || {});
+  return added;
+}
+async function bAutoRefresh(opts = {}) {
+  try {
+    const j = await bAutoApi('/buzzer/data?limit=500');
+    const added = bAutoIngest(j.items || [], { analyze: false });
+    const st = await bAutoApi('/bot/status'); bAutoStatus = st;
+    if (!st.auto) { const cfg = await bAutoApi('/bot/config', { keywords: (st.keywords || []).join(','), intervalMin: st.intervalMin || 10, auto: true }); bAutoStatus = cfg.bot || st; }
+    $('#bautotoggle').textContent = bAutoStatus.auto ? 'Hentikan otomatis' : 'Aktifkan otomatis';
+    if (opts.analyzeExisting || added) bAutoAnalyze({ ...bAutoStatus, lastFound: st.lastFound, lastErrors: st.lastErrors, lastError: st.lastError, automatic: !!opts.automatic });
+    else if (!bAutoItems.length) $('#bautost').textContent = bAutoStatus.running ? 'Collector sedang mencari unggahan…' : 'Collector terhubung; belum ada data hasil pencarian.';
+    return { added, status: bAutoStatus };
+  } catch (e) { $('#bautost').textContent = 'Collector belum terhubung: ' + e.message; throw e; }
+}
+let bAutoLastCompletedRun = '', bAutoManualRun = false;
+function bAutoConnect() {
+  if (bAutoSource) return;
+  try { bAutoSource = new EventSource(bAutoBase() + '/events'); }
+  catch (e) { $('#bautost').textContent = 'Tidak dapat membuka koneksi Collector: ' + e.message; return; }
+  bAutoSource.onopen = () => { $('#bautost').textContent = 'Terhubung ke Collector; memuat data…'; bAutoRefresh(); };
+  bAutoSource.onerror = () => { $('#bautost').textContent = 'Koneksi Collector terputus; browser akan mencoba menyambung kembali.'; };
+  bAutoSource.addEventListener('buzzer-data', e => { try { const j = JSON.parse(e.data); const added = bAutoIngest(j.items || []); if (added) $('#bautost').textContent = `${added} unggahan baru diterima; analisis lokal sedang diperbarui…`; } catch (x) {} });
+  bAutoSource.addEventListener('bot', e => {
+    try {
+      const next = JSON.parse(e.data), wasRunning = !!(bAutoStatus && bAutoStatus.running);
+      bAutoStatus = next; $('#bautotoggle').textContent = next.auto ? 'Hentikan otomatis' : 'Aktifkan otomatis';
+      if (wasRunning && !next.running && next.lastRun && next.lastRun !== bAutoLastCompletedRun) {
+        bAutoLastCompletedRun = next.lastRun;
+        if (!bAutoManualRun) bAutoRefresh({ analyzeExisting: true, automatic: true });
+      }
+    } catch (x) {}
+  });
+}
+$('#bautonow').onclick = async () => {
+  const btn = $('#bautonow'); btn.disabled = true; bAutoManualRun = true;
+  $('#bautost').textContent = 'Meminta Collector mencari unggahan publik terbaru…';
+  try {
+    bAutoConnect();
+    const accepted = await bAutoApi('/bot/search', { auto: true });
+    const startedAt = accepted.bot && accepted.bot.lastRun;
+    let st = accepted.bot || {}, finished = false;
+    for (let i = 0; i < 600; i++) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      st = await bAutoApi('/bot/status');
+      if (!st.running && (!startedAt || st.lastRun === startedAt)) { finished = true; break; }
+    }
+    if (!finished) throw new Error('Pencarian masih berjalan lebih dari 300 detik. Periksa status Collector; data tidak dianggap selesai.');
+    const data = await bAutoApi('/buzzer/data?limit=500');
+    bAutoIngest(data.items || [], { analyze: false });
+    bAutoStatus = st; bAutoLastCompletedRun = st.lastRun || bAutoLastCompletedRun;
+    if (st.lastErrors && !st.lastFound) $('#bautost').textContent = `Pengambilan gagal: ${st.lastError || st.lastErrors + ' kata kunci gagal'}. Arsip lama tidak dianggap data baru.`;
+    bAutoAnalyze({ ...st, manual: true });
+  } catch (e) { $('#bautost').textContent = 'Gagal mengambil/menganalisis: ' + e.message; }
+  finally { bAutoManualRun = false; btn.disabled = false; }
+};
+$('#bautotoggle').onclick = async () => { try { const st = bAutoStatus || await bAutoApi('/bot/status'); const j = await bAutoApi('/bot/config', { keywords: (st.keywords || []).join(','), intervalMin: st.intervalMin || 10, auto: !st.auto }); bAutoStatus = j.bot; $('#bautotoggle').textContent = bAutoStatus.auto ? 'Hentikan otomatis' : 'Aktifkan otomatis'; $('#bautost').textContent = bAutoStatus.auto ? 'Pengumpulan otomatis diaktifkan.' : 'Pengumpulan otomatis dihentikan.'; } catch (e) { $('#bautost').textContent = 'Gagal mengubah status otomatis: ' + e.message; } };
+bAutoRenderSources();
+if (bAutoItems.length >= 3) bAutoAnalyze({ restored: true });
+if (location.protocol === 'http:' || location.protocol === 'https:') bAutoConnect();
+

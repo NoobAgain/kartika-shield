@@ -1,0 +1,21 @@
+KARTIKA SHIELD 2.0.1 - MINI LIVE TV FIX
+
+Perubahan terisolasi:
+- Mengganti endpoint live_stream berbasis channel ID dengan embed ID video langsung dari tautan yang diberikan pemilik proyek.
+- Kanal yang tersedia: tvOne, Kompas TV, Metro TV.
+- TVRI dihapus dari pilihan kanal.
+- Panel Mini Live TV dan tombol tampilkan diubah menjadi position: fixed, kiri bawah, jarak 8px dari tepi viewport.
+- Iframe menggunakan referrerpolicy=origin untuk membantu identifikasi origin pada halaman yang disajikan melalui HTTP/HTTPS.
+- Tautan Buka di YouTube tetap tersedia sebagai fallback jika embed diblokir oleh YouTube atau penyiar.
+
+Catatan penting:
+- Error YouTube 153 dapat tetap terjadi bila dashboard dibuka melalui file:// atau browser tidak mengirim HTTP Referer/origin yang diperlukan. Jalankan dashboard melalui HTTP/HTTPS, bukan file lokal, untuk pengujian embed.
+- Tidak ada jaminan siaran dapat di-embed; pemilik siaran dapat membatasi pemutaran di luar YouTube.
+- Perubahan ini hanya pada Mini Live TV, CSS posisi panel, tes Mini TV, dan versi package.
+
+Verifikasi lokal:
+- test:unit
+- test:news
+- test:mini-tv
+- node --check js/modules/mini-tv.js
+- build

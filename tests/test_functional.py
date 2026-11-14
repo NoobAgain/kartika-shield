@@ -129,15 +129,15 @@ with sync_playwright() as p:
     def _():
         pg = newpage(b); run_sample(pg); clk(pg, '#bpm'); pg.wait_for_timeout(400)
         A(pg.evaluate("mr.length")>=2, 'mr kosong'); A(pg.evaluate("!!document.querySelector('#mew')"), 'panel EWS tidak ada'); A('Peringatan dini kognitif' in pg.inner_text('#mx'))
-        A(pg.evaluate("JSON.parse(localStorage.bs_m).length")>=2); A(not pg.errs, str(pg.errs))
-    @T('F19 Peta Dini: tambah laporan manual, contoh, pakai skor terakhir, reset')
+        A(pg.evaluate("JSON.parse(localStorage.bs_m_public_v1).length")>=2); A(not pg.errs, str(pg.errs))
+    @T('F19 Peta Dini: laporan manual terpisah, tidak ada data contoh, reset')
     def _():
         pg = newpage(b); val(pg, '#mis', 'isu uji manual'); val(pg, '#mvl', '12'); val(pg, '#mrk', '70'); clk(pg, '#madd'); A(pg.evaluate("mr.length")==1)
         val(pg, '#mvl', '-5'); val(pg, '#mis', 'tidak valid'); clk(pg, '#madd'); A(pg.evaluate("mr.length")==1, 'volume negatif diterima')
-        clk(pg, '#mex'); A(pg.evaluate("mr.length")>1); clk(pg, '#mlast'); clk(pg, '#mrs'); A(pg.evaluate("mr.length")==0); A(not pg.errs, str(pg.errs))
+        A(pg.locator('#mex').count()==0, 'tombol data contoh masih tersedia'); clk(pg, '#mlast'); clk(pg, '#mrs'); A(pg.evaluate("mr.length")==0); A(not pg.errs, str(pg.errs))
     @T('F20 Peta Dini: ekspor PNG (unduhan) dan Cetak/PDF (jendela)')
     def _():
-        pg = newpage(b); clk(pg, '#mex')
+        pg = newpage(b); clk(pg, '#mfetch')
         try:
             with pg.expect_download(timeout=8000) as d: clk(pg, '#mpng')
             A(d.value.suggested_filename.lower().endswith('.png'))

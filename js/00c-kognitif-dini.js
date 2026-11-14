@@ -87,7 +87,14 @@
     });
     Object.values(agr).forEach(a => { a.rataSkor = a.n ? Math.round(a.rataSkor / a.n) : 0; });
     const wilayah = Object.create(null);
-    dini.forEach(x => x.wilayah.forEach(p => { (wilayah[p] = wilayah[p] || { kode: p, nama: o.namaWilayah[p] || p, narasi: [] }).narasi.push(x.klaster); }));
+    dini.forEach(x => x.wilayah.forEach(p => {
+      const kdCode = (g.KODAM_BY_PROVINCE || {})[p] || p;
+      const kd = (g.KODAM_DATA || []).find(k => k.code === kdCode);
+      const provinceLabel = (g.KS_KODAM_SCOPE?.provinceNames || {})[p] || p;
+      const item = wilayah[kdCode] = wilayah[kdCode] || { kode: kdCode, nama: kd?.name || o.namaWilayah[p] || p, narasi: [], provinsi: [] };
+      if (!item.provinsi.includes(provinceLabel)) item.provinsi.push(provinceLabel);
+      if (!item.narasi.includes(x.klaster)) item.narasi.push(x.klaster);
+    }));
     const kron = (narasi.kronologi || []).filter(e => urut.some(x => x.klaster === e.klaster)).slice(0, 15);
     const rank = { tinggi: 2, sedang: 1, rendah: 0 };
     const keyakinan = urut.length ? urut.reduce((m, x) => rank[x.keyakinan] < rank[m] ? x.keyakinan : m, 'tinggi') : 'rendah';
@@ -104,7 +111,7 @@
     l.narasiDominan.forEach(n => L.push('- #' + n.klaster + ' [' + n.kategori + ' ' + n.skor + '] ' + n.label + ' (' + n.akun + ' akun)'));
     L.push('', 'INDIKATOR ANCAMAN'); l.indikator.forEach(i => L.push('- ' + i.nama + ': ' + i.rataSkor));
     L.push('', 'KRONOLOGI'); l.kronologi.forEach(e => L.push('- ' + e.waktu + ' #' + e.klaster + ' ' + e.aksi + ' (' + e.akun + ')'));
-    L.push('', 'WILAYAH'); (l.wilayah.length ? l.wilayah : [{ nama: 'Data wilayah tidak tersedia', narasi: [] }]).forEach(w => L.push('- ' + w.nama + (w.narasi.length ? ' (narasi ' + w.narasi.join(',') + ')' : '')));
+    L.push('', 'KODAM TERKAIT (WILAYAH PEMANTAUAN)'); (l.wilayah.length ? l.wilayah : [{ nama: 'Data Kodam tidak tersedia', narasi: [], provinsi: [] }]).forEach(w => L.push('- ' + w.nama + (w.provinsi?.length ? ' · Provinsi: ' + w.provinsi.join(', ') : '') + (w.narasi.length ? ' (narasi ' + w.narasi.join(',') + ')' : '')));
     L.push('', 'BUKTI PENDUKUNG'); l.bukti.forEach(b => L.push('- #' + b.klaster + ' ' + b.indikator + ': "' + b.kutipan + '"'));
     L.push('', 'REKOMENDASI RESPONS DEFENSIF'); l.rekomendasi.forEach(r => L.push('- ' + r));
     L.push('', 'BATASAN'); l.batasan.forEach(b => L.push('- ' + b));

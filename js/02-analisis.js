@@ -1,26 +1,85 @@
-// Analisis Konten: antarmuka untuk Cognitive Threat Analysis (js/00a-kognitif-teks.js), tautan cek fakta, dashboard sesi.
+// Verifikasi Data: pemeriksaan pola teks dan pengiriman lampiran gambar ke n8n bila tersedia.
 let lastH=null;
 // Seluruh penilaian berbasis aturan yang transparan; tidak ada AI dan teks tidak dikirim ke server.
 const heur = t => KS.teks.analisis(t);
+let verifyImage = null;
+const verifyImageInput = document.getElementById('verify-image');
+const verifyImagePreviewWrap = document.getElementById('verify-image-preview-wrap');
+const verifyImagePreview = document.getElementById('verify-image-preview');
+const verifyImageStatus = document.getElementById('verify-image-status');
+const verifyImageRemove = document.getElementById('verify-image-remove');
+if (verifyImageInput) verifyImageInput.addEventListener('change', () => {
+  const file = verifyImageInput.files && verifyImageInput.files[0];
+  verifyImage = null;
+  if (!file) { if (verifyImagePreviewWrap) verifyImagePreviewWrap.hidden = true; return; }
+  if (!['image/jpeg','image/png','image/webp','image/heic','image/heif'].includes(file.type)) {
+    verifyImageInput.value = '';
+    if (verifyImageStatus) verifyImageStatus.textContent = 'Format tidak didukung. Pilih JPG, PNG, WEBP, atau HEIC.';
+    return;
+  }
+  if (file.size > 15 * 1024 * 1024) {
+    verifyImageInput.value = '';
+    if (verifyImageStatus) verifyImageStatus.textContent = 'Ukuran foto melebihi batas 15 MB.';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (typeof reader.result !== 'string' || !reader.result.startsWith('data:image/')) {
+      if (verifyImageStatus) verifyImageStatus.textContent = 'Foto gagal dibaca.';
+      return;
+    }
+    verifyImage = { name: file.name, mime_type: file.type, size_bytes: file.size, file: file };
+    if (verifyImagePreview && !['image/heic','image/heif'].includes(file.type)) verifyImagePreview.src = reader.result;
+    if (verifyImagePreviewWrap) verifyImagePreviewWrap.hidden = false;
+    if (verifyImageStatus) verifyImageStatus.textContent = 'Foto siap dikirim ke n8n (multipart/form-data, maksimal 15 MB).';
+  };
+  reader.onerror = () => { if (verifyImageStatus) verifyImageStatus.textContent = 'Foto gagal dibaca.'; };
+  reader.readAsDataURL(file);
+});
+if (verifyImageRemove) verifyImageRemove.addEventListener('click', () => {
+  verifyImage = null;
+  if (verifyImageInput) verifyImageInput.value = '';
+  if (verifyImagePreview) verifyImagePreview.removeAttribute('src');
+  if (verifyImagePreviewWrap) verifyImagePreviewWrap.hidden = true;
+  if (verifyImageStatus) verifyImageStatus.textContent = 'Foto dihapus.';
+});
 const arahNarasi = t => { const a = KS.teks.analisis(t); return { sasaran: a.sasaran, isu: a.isu, arah: a.arah, emosi: a.emosi }; };
 async function analyze(t) { return heur(t); }
 
 $("#go").onclick = async () => {
-  const t = $("#inp").value.trim(); if (!t) return;
-  const b = $("#go"); b.disabled = true; b.textContent = "Menganalisis…";
+  const typedText = $("#inp").value.trim();
+  const imageAttachment = verifyImage;
+  if (!typedText && !imageAttachment) { if (verifyImageStatus) verifyImageStatus.textContent = 'Masukkan teks atau pilih foto terlebih dahulu.'; return; }
+  const t = typedText || '[Foto terlampir]';
+  const n8nText = typedText;
+  const b = $("#go"); b.disabled = true; b.textContent = "Memverifikasi…";
   try {
-    const r = await analyze(t);
+    const r = await analyze(typedText || '');
     r.risk = Math.max(0, Math.min(100, +r.risk || 0)); r.verdict = NV[r.verdict] || r.verdict; curT = t;
     const c = {}; Object.entries(r.kategori || {}).forEach(([k, v]) => { if (v.skor > 0) c[k] = v.skor; });
-    const cid = ksBuatCaseId(), kc = kCity(t);
+    const cid = ksBuatCaseId();
+    // Atribusi Kodam hanya berasal dari petunjuk lokasi eksplisit dalam narasi.
+    // Tidak ada fallback ke pilihan manual agar hasil tidak diarahkan ke Kodam yang salah.
+    const kc = kCity(typedText);
+    const locationStatus = document.getElementById('kodam-auto-status');
+    if (locationStatus) {
+      locationStatus.textContent = kc
+        ? 'Kodam terdeteksi otomatis dari petunjuk lokasi dalam narasi: ' + kc[1] + '. Kecocokan lokasi perlu diverifikasi dengan sumber primer.'
+        : 'Kodam belum teridentifikasi dari narasi. Tambahkan nama Kodam, provinsi, atau kota yang jelas; sistem tidak akan menebak.';
+    }
     hist.push({ v: r.verdict, r: r.risk, s: !!r.sara, t: (r.teknik || []).slice(0, 5), a: (r.sasaran || []).join(', '), dir: r.arah || '', i: r.isu || '', c, d: Date.now(), id: cid });
     if (hist.length > 2000) hist = hist.slice(-2000);
     // Skor aturan (r.risk) tidak diubah; n8n dipanggil terpisah dan gagal dengan tenang (mode offline).
     const ind = (r.teknik || []).concat(Object.keys(c).map(k => (KS.teks.KATEGORI[k] || { nama: k }).nama));
-    const g = await analisisGabungan({ id: cid, text: t, ruleScore: r.risk, indicators: ind, source: 'Analisis Konten', region: kc ? kc[1] : '' });
-    save(); show(r, g); kReal(t, r); lastH = { t, r };
+    const g = await analisisGabungan({ id: cid, text: n8nText, ruleScore: r.risk, indicators: ind, source: 'Verifikasi Data', region: kc ? kc[1] : '', image: imageAttachment });
+    save(); show(r, g); kReal(typedText || '[Foto terlampir]', r, kc); lastH = { t, r };
+    if (imageAttachment && verifyImageStatus) {
+      verifyImageStatus.textContent = g.mode === 'online'
+        ? 'Workflow n8n mengembalikan hasil. Periksa vonis, alasan, dan skor pada laporan di bawah.'
+        : 'Foto belum berhasil dianalisis oleh n8n. Periksa status dan pesan error; hasil lokal bukan analisis isi foto.';
+    }
   } catch (e) { $("#res").innerHTML = '<div class="card">Gagal menganalisis. Coba lagi sebentar.</div>'; }
-  b.disabled = false; b.textContent = "Analisis";
+  b.disabled = false; b.textContent = "Verifikasi Data";
 };
 
 function fcLinks(t) {
@@ -57,12 +116,36 @@ ${ksPanelHtml(g)}<p class="note" style="margin:6px 0">Penilaian pola bahasa dan 
 }
 
 function dash() {
-  const n = hist.length; if (!n) { $("#dash").innerHTML = "<p>Belum ada analisis. Buka Analisis Konten untuk memulai.</p>"; return }
+  const n = hist.length; if (!n) { $("#dash").innerHTML = "<p>Belum ada analisis. Buka Verifikasi Data untuk memulai.</p>"; return }
   const cnt = Object.create(null); hist.forEach(h => cnt[h.v] = (cnt[h.v] || 0) + 1);
   const tk = Object.create(null); hist.forEach(h => (Array.isArray(h.t) ? h.t : []).forEach(x => tk[x] = (tk[x] || 0) + 1));
   const kg = Object.create(null); hist.forEach(h => Object.keys(h.c || {}).forEach(k => { const nm = (KS.teks.KATEGORI[k] || { nama: k }).nama; kg[nm] = (kg[nm] || 0) + 1; }));
   const avg = Math.round(hist.reduce((a, h) => a + h.r, 0) / n), sa = hist.filter(h => h.s).length;
   const bars = (o, col) => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `<div class="bar"><span style="width:190px">${esc(k)}</span><i style="width:${v / n * 180 + 4}px;background:${col ? col(k) : "var(--gr)"}"></i>${v}</div>`).join("");
-  $("#dash").innerHTML = `<div class="grid"><div class="stat"><b>${n}</b>Konten dianalisis</div><div class="stat"><b>${avg}</b>Rata-rata risiko</div><div class="stat"><b>${sa}</b>Terindikasi SARA</div></div><h3>Sebaran status</h3>${bars(cnt, k => COL[k] || "#999")}<h3>Kategori indikator kognitif (jumlah konten yang memuatnya)</h3>${bars(kg) || "-"}<h3>Teknik manipulasi terbanyak</h3>${bars(tk) || "-"}<p class=note>Setiap angka berasal dari riwayat analisis di peramban ini (Analisis Konten).</p>`;
+  $("#dash").innerHTML = `<div class="grid"><div class="stat"><b>${n}</b>Konten dianalisis</div><div class="stat"><b>${avg}</b>Rata-rata risiko</div><div class="stat"><b>${sa}</b>Terindikasi SARA</div></div><h3>Sebaran status</h3>${bars(cnt, k => COL[k] || "#999")}<h3>Kategori indikator kognitif (jumlah konten yang memuatnya)</h3>${bars(kg) || "-"}<h3>Teknik manipulasi terbanyak</h3>${bars(tk) || "-"}<p class=note>Setiap angka berasal dari riwayat verifikasi di peramban ini (Verifikasi Data).</p>`; 
+  // Ringkasan terpadu: seluruh modul memakai agregasi Kodam yang sama.
+  const kd = typeof calcM === 'function' ? calcM() : {sc:{},sv:{}};
+  const kdRows = Object.keys(kd.sc||{}).sort((x,y)=>(kd.sc[y]||0)-(kd.sc[x]||0)).slice(0,8);
+  const kdName = code => (window.KODAM_DATA||[]).find(k=>k.code===code)?.name || code;
+  const eventCount = typeof kc === 'number' ? kc : 0;
+  const earlyCount = typeof mr !== 'undefined' && Array.isArray(mr) ? mr.length : 0;
+  const feedCount = typeof fAll !== 'undefined' && Array.isArray(fAll) ? fAll.length : 0;
+  const reviewCount = typeof fRev !== 'undefined' && Array.isArray(fRev) ? fRev.length : 0;
+  const buzzerClusters = typeof lastR !== 'undefined' && lastR ? (lastR.cls||[]).length : 0;
+  $("#dash").insertAdjacentHTML('beforeend',
+    `<h3>Ringkasan pemantauan 27 Kodam</h3>
+     <div class="grid">
+       <div class="stat"><b>${eventCount}</b>Peristiwa peta sesi ini</div>
+       <div class="stat"><b>${earlyCount}</b>Catatan Peta Dini</div>
+       <div class="stat"><b>${feedCount}</b>Item feed</div>
+       <div class="stat"><b>${reviewCount}</b>Tinjauan feed</div>
+       <div class="stat"><b>${buzzerClusters}</b>Klaster buzzer terakhir</div>
+       <div class="stat"><b>${Object.keys(kd.sc||{}).length}</b>Kodam dengan catatan</div>
+     </div>
+     <h3>Prioritas Kodam dari Peta Dini</h3>
+     ${kdRows.length ? kdRows.map(code=>`<div class="bar"><span style="width:240px">${esc(kdName(code))}</span><i style="width:${Math.max(4,(kd.sc[code]||0)*1.8)}px;background:var(--gr)"></i>${kd.sc[code]} · ${kd.sv[code]||0} laporan</div>`).join('') : '<p class="note">Belum ada catatan terpetakan. Jalankan analisis dengan petunjuk Kodam/provinsi/kota, terima feed, atau tambahkan laporan manual di Peta Dini.</p>'}
+     <p class="note">Ringkasan ini menggabungkan riwayat Verifikasi Data, Deteksi Buzzer, data kolektor, dan Peta Dini. Data simulasi ditandai terpisah dan tidak dihitung sebagai kejadian nyata.</p>`
+  );
+
 }
 $("#rst").onclick = () => { hist = []; save(); dash() };

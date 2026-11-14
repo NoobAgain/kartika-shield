@@ -1,167 +1,199 @@
 {
  "target": "index.html",
  "total": 32,
- "lulus": 32,
+ "lulus": 0,
  "hasil": [
   {
    "nama": "F01 muat halaman: tanpa pageerror, tanpa permintaan eksternal, CSP aktif",
-   "ok": true,
-   "s": 1.49
+   "ok": false,
+   "s": 0.31,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F02 dock: 7 jendela dapat dibuka, diminimalkan, dan dipulihkan",
-   "ok": true,
-   "s": 25.37
+   "ok": false,
+   "s": 0.25,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F03 Analisis Konten: hasil lengkap (verdict, 8 kategori, bukti, DISARM, metode)",
-   "ok": true,
-   "s": 1.9
+   "ok": false,
+   "s": 0.14,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F04 Analisis Konten: input kosong tidak menghasilkan apa pun",
-   "ok": true,
-   "s": 1.69
+   "ok": false,
+   "s": 0.14,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F05 Analisis Konten: tombol Isi contoh dan Bersihkan",
-   "ok": true,
-   "s": 1.46
+   "ok": false,
+   "s": 0.17,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F06 [B-02] bantahan bersumber: risiko rendah & arah Membantah/meluruskan",
-   "ok": true,
-   "s": 1.8
+   "ok": false,
+   "s": 0.18,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F07 tidak ada komponen AI di UI (tombol/teks/objek)",
-   "ok": true,
-   "s": 1.5
+   "ok": false,
+   "s": 0.13,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F08 Dashboard: statistik & kategori dari riwayat; Reset",
-   "ok": true,
-   "s": 3.18
+   "ok": false,
+   "s": 0.15,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F09 Buzzer: contoh -> tabel narasi, peringatan dini, kronologi, graf, akun",
-   "ok": true,
-   "s": 1.84
+   "ok": false,
+   "s": 0.16,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F10 keterlacakan: simpul/sisi graf di layar = keluaran mesin",
-   "ok": true,
-   "s": 1.62
+   "ok": false,
+   "s": 0.15,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F11 Buzzer: validasi CSV (ditolak/duplikat) + Pakai data bersih + unduh baris ditolak",
-   "ok": true,
-   "s": 1.8
+   "ok": false,
+   "s": 0.14,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F12 Buzzer: waktu ISO (YYYY-MM-DDTHH:MM) dikenali -> mode tanggal & jam",
-   "ok": true,
-   "s": 1.67
+   "ok": false,
+   "s": 0.16,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F13 [B-12] impor: teks berakhiran |ok tidak dipotong; |XX tak dikenal diberi peringatan",
-   "ok": true,
-   "s": 1.41
+   "ok": false,
+   "s": 0.17,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F14 Buzzer: impor berkas CSV via input file",
-   "ok": true,
-   "s": 2.26
+   "ok": false,
+   "s": 0.13,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F15 Buzzer: kurang dari 3 baris valid -> pesan, tanpa galat",
-   "ok": true,
-   "s": 1.77
+   "ok": false,
+   "s": 0.13,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F16 Buzzer: Validasi model menampilkan TP/FP/FN/TN/Precision/Recall/F1",
-   "ok": true,
-   "s": 1.69
+   "ok": false,
+   "s": 0.16,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F17 Buzzer: ekspor hasil JSON + salin ringkasan + laporan situasi kognitif",
-   "ok": true,
-   "s": 1.8
+   "ok": false,
+   "s": 0.12,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F18 Kirim ke Peta Dini -> catatan wilayah + panel peringatan dini kognitif",
-   "ok": true,
-   "s": 2.24
+   "ok": false,
+   "s": 0.14,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
-   "nama": "F19 Peta Dini: tambah laporan manual, contoh, pakai skor terakhir, reset",
-   "ok": true,
-   "s": 1.69
+   "nama": "F19 Peta Dini: laporan manual terpisah, tidak ada data contoh, reset",
+   "ok": false,
+   "s": 0.13,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F20 Peta Dini: ekspor PNG (unduhan) dan Cetak/PDF (jendela)",
-   "ok": true,
-   "s": 2.74
+   "ok": false,
+   "s": 0.13,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F21 Laporan Komando: bagian Situasi Kognitif (narasi, indikator, kronologi, wilayah, bukti, keyakinan, rekomendasi)",
-   "ok": true,
-   "s": 2.34
+   "ok": false,
+   "s": 0.15,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F22 Laporan Komando: simpan -> riwayat -> muat -> hapus",
-   "ok": true,
-   "s": 3.02
+   "ok": false,
+   "s": 0.16,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F23 Laporan Komando: unduh JSON (ada kognitif), CSV (baris narasi_kognitif), teks, cetak",
-   "ok": true,
-   "s": 2.82
+   "ok": false,
+   "s": 0.14,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F24 Pusat Data: cadangan JSON -> hapus semua -> pulihkan; impor rusak ditolak",
-   "ok": true,
-   "s": 8.6
+   "ok": false,
+   "s": 0.16,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F25 Feed: kolektor tiruan -> hit dirender, XSS tidak dieksekusi, unduh CSV aman rumus",
-   "ok": true,
-   "s": 3.18
+   "ok": false,
+   "s": 0.14,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F26 Feed: kolektor tak terjangkau -> pesan galat, tanpa pageerror",
-   "ok": true,
-   "s": 2.89
+   "ok": false,
+   "s": 0.15,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F27 Peta Live: Mode Simulasi berlabel SIMULASI/DATA SINTETIS; analisis menambah sinyal langsung",
-   "ok": true,
-   "s": 3.79
+   "ok": false,
+   "s": 0.18,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F28 responsif 390x844: tanpa overflow horizontal & dock terlihat",
-   "ok": true,
-   "s": 1.21
+   "ok": false,
+   "s": 0.17,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F29 persistensi: riwayat bertahan setelah muat ulang",
-   "ok": true,
-   "s": 3.28
+   "ok": false,
+   "s": 0.15,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F30 localStorage berisi data beracun/rusak: aplikasi tetap termuat",
-   "ok": true,
-   "s": 2.07
+   "ok": false,
+   "s": 0.17,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F31 [B-14] DISARM: otomasi tidak disimpulkan (tanpa T0049.003), T0143.002 butuh akun baru, bantahan bersumber tidak dipetakan",
-   "ok": true,
-   "s": 1.43
+   "ok": false,
+   "s": 0.14,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   },
   {
    "nama": "F32 akun lama dengan teks+waktu sama (relawan) TIDAK berlabel \"Indikasi kuat tidak autentik\"; kampanye akun baru berlabel",
-   "ok": true,
-   "s": 2.03
+   "ok": false,
+   "s": 0.15,
+   "err": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:8792/index.html"
   }
  ]
 }
